@@ -14,7 +14,7 @@
 <title>Maison Facile — Location de logements au Congo</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <style>
-:root{--green:#087b50;--green2:#075d3f;--mint:#eaf7f0;--ink:#172b25;--muted:#61716a;--line:#e1e9e4;--bg:#f7faf8}
+:root{--green:#0a7d4f;--green2:#075d3f;--mint:#f3ead0;--ink:#2b2b2b;--muted:#6b6257;--line:#d9cfb5;--bg:#f7f1e3;--gold:#f2c230;--red:#ce1126}
 *{box-sizing:border-box}
 body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg)}
 button,input,select,textarea{font:inherit}
@@ -129,6 +129,14 @@ input,select,textarea{width:100%;padding:10px;border:1px solid var(--line);borde
 .sheet button.cancel{text-align:center;color:var(--muted);font-weight:700}
 @media(max-width:860px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.search{grid-template-columns:1fr 1fr}.search .btn{grid-column:1/-1}}
 @media(max-width:560px){.cards{grid-template-columns:1fr}.grid2{grid-template-columns:1fr}.gal{grid-template-columns:1fr}.brand{font-size:19px}.nav .btn{padding:9px 10px;font-size:13px}}
+
+/* Thème classique congolais */
+h1,h2,h3,.brand{font-family:Georgia,'Times New Roman',serif}
+.top{background:#fbf7ec;border-bottom:none;box-shadow:0 1px 0 var(--line)}
+.brand span{color:#2b2b2b}
+.btn{border-radius:6px}
+.btn.light{background:#fff;border:1px solid var(--line)}
+input,select,textarea{border-radius:6px}
 </style>
 </head>
 <body>
@@ -143,17 +151,22 @@ input,select,textarea{width:100%;padding:10px;border:1px solid var(--line);borde
 <section class="hero">
   <div class="hero-in">
     <div style="font-size:12px;letter-spacing:1.5px;color:#c7efdb;font-weight:800">VOTRE LOGEMENT, PLUS SIMPLEMENT</div>
-    <h1>Trouvez votre maison à louer partout au Congo.</h1>
+    <h1>Trouvez votre maison à louer ou à vendre au Congo.</h1>
     <p>Consultez les annonces avec photos et vidéos, appelez le propriétaire ou écrivez-lui directement dans l'application.</p>
     <div class="search">
       <div><label class="l" for="city">Ville ou quartier</label><input id="city" placeholder="Ex. : Brazzaville, Talangaï, Pointe-Noire"></div>
-      <div><label class="l" for="maxPrice">Loyer maximum</label>
+      <div><label class="l" for="deal">Location ou vente</label>
+        <select id="deal"><option value="">Toutes</option><option value="location">Location</option><option value="vente">Vente</option></select></div>
+      <div><label class="l" for="maxPrice">Prix maximum</label>
         <select id="maxPrice">
           <option value="">Tous les prix</option>
           <option value="100000">Jusqu'à 100 000</option>
           <option value="200000">Jusqu'à 200 000</option>
           <option value="350000">Jusqu'à 350 000</option>
           <option value="500000">Jusqu'à 500 000</option>
+          <option value="25000000">Jusqu'à 25 000 000</option>
+          <option value="50000000">Jusqu'à 50 000 000</option>
+          <option value="100000000">Jusqu'à 100 000 000</option>
         </select></div>
       <div><label class="l" for="type">Type</label>
         <select id="type">
@@ -200,6 +213,8 @@ input,select,textarea{width:100%;padding:10px;border:1px solid var(--line);borde
   <div class="mh"><h2>Publier un logement</h2><button class="x" data-close="publishModal">×</button></div>
   <form id="pubForm" class="grid2">
     <div class="full"><label class="l" for="pTitle">Titre de l'annonce</label><input id="pTitle" required maxlength="80" placeholder="Ex. : Maison avec cour à Bacongo"></div>
+    <div><label class="l" for="pDeal">Location ou vente</label>
+      <select id="pDeal" required><option value="location">Location (loyer par mois)</option><option value="vente">Vente (prix total)</option></select></div>
     <div><label class="l" for="pType">Type</label>
       <select id="pType" required><option>Maison</option><option>Appartement</option><option>Studio</option><option>Chambre</option></select></div>
     <div><label class="l" for="pRooms">Nombre de chambres</label>
@@ -490,6 +505,8 @@ async function loadListings() {
   if (max) q = q.lte('price', max);
   const t = $('type').value;
   if (t) q = q.eq('listing_type', t);
+  const dl = $('deal').value;
+  if (dl) q = q.eq('transaction', dl);
   const { data, error } = await q;
   if (error) { toast('Impossible de charger les annonces.'); return; }
   listings = data || [];
@@ -505,12 +522,12 @@ function renderCards() {
   $('cards').innerHTML = listings.map(l => {
     const img = l.photos?.[0] ? `<img src="${mediaUrl(l.photos[0])}" alt="${esc(l.title)}" loading="lazy">` : '<div class="nop">⌂</div>';
     return `<article class="card" onclick="openDetail('${l.id}')">
-      <div class="ph">${img}<span class="badge">${esc(l.listing_type)}</span></div>
+      <div class="ph">${img}<span class="badge">${l.transaction === 'vente' ? 'Vente' : 'Location'} · ${esc(l.listing_type)}</span></div>
       <div class="cb">
         <div class="loc">⌖ ${esc(l.city)} · ${esc(l.neighborhood)}</div>
         <h3>${esc(l.title)}</h3>
         <div class="loc">${l.rooms ? esc(l.rooms) + ' chambre(s)' : ''}</div>
-        <div class="price">${money(l.price)} <small>/ mois</small></div>
+        <div class="price">${money(l.price)}${l.transaction === 'vente' ? '' : ' <small>/ mois</small>'}</div>
       </div></article>`;
   }).join('');
 }
@@ -529,7 +546,7 @@ async function openDetail(id) {
   const waText = encodeURIComponent('Bonjour, je vous contacte au sujet de votre annonce Maison Facile : ' + l.title);
   $('detailBody').innerHTML = `
     <div class="gal">${media}</div>
-    <div style="font-size:24px;color:var(--green);font-weight:850">${money(l.price)} <span style="font-size:13px;color:var(--muted)">/ mois</span></div>
+    <div style="font-size:24px;color:var(--green);font-weight:850">${money(l.price)} ${l.transaction === 'vente' ? '' : '<span style="font-size:13px;color:var(--muted)">/ mois</span>'}</div>
     <p class="loc">⌖ ${esc(l.city)} · ${esc(l.neighborhood)} · ${esc(l.listing_type)}${l.rooms ? ' · ' + esc(l.rooms) + ' chambre(s)' : ''}</p>
     <h3 style="margin:6px 0">${esc(l.title)}</h3>
     <p style="line-height:1.5">${esc(l.description)}</p>
@@ -583,6 +600,7 @@ function editListing() {
   hideM('detailModal');
   $('pTitle').value = l.title;
   $('pType').value = l.listing_type;
+  $('pDeal').value = l.transaction || 'location';
   $('pRooms').value = l.rooms || '';
   $('pCity').value = l.city;
   $('pQuartier').value = l.neighborhood;
@@ -627,6 +645,7 @@ $('pubForm').onsubmit = async e => {
       owner_id: me.id,
       title: $('pTitle').value.trim(),
       listing_type: $('pType').value,
+      transaction: $('pDeal').value,
       city: $('pCity').value.trim(),
       neighborhood: $('pQuartier').value.trim(),
       price: Number($('pPrice').value),
@@ -673,6 +692,7 @@ async function saveEdit() {
     const { error } = await sb.from('listings').update({
       title: $('pTitle').value.trim(),
       listing_type: $('pType').value,
+      transaction: $('pDeal').value,
       city: $('pCity').value.trim(),
       neighborhood: $('pQuartier').value.trim(),
       price: Number($('pPrice').value),
