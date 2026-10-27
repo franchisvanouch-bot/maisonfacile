@@ -1,0 +1,1550 @@
+<!doctype html>
+<html lang="fr" translate="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="google" content="notranslate">
+<meta name="theme-color" content="#087b50">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Maison Facile">
+<title>Maison Facile — Location de logements au Congo</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<style>
+:root{--green:#087b50;--green2:#075d3f;--mint:#eaf7f0;--ink:#172b25;--muted:#61716a;--line:#e1e9e4;--bg:#f7faf8}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg)}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.top{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+.nav{max-width:1160px;margin:auto;padding:12px 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{font-size:22px;font-weight:850;color:var(--green);letter-spacing:-.6px;margin-right:auto}
+.brand span{color:#1c3028}
+.btn{border:0;background:var(--green);color:#fff;padding:11px 16px;border-radius:10px;font-weight:700;text-decoration:none;display:inline-block;text-align:center}
+.btn:hover{background:var(--green2)}
+.btn.light{background:#fff;color:var(--green);border:1px solid var(--line)}
+.btn.danger{background:#b42318}
+.btn:disabled{opacity:.6}
+.hero{background:linear-gradient(120deg,#072d25,#0b513d);color:#fff;padding:48px 18px}
+.hero-in{max-width:1116px;margin:auto}
+.hero h1{font-size:clamp(28px,5vw,44px);margin:6px 0 10px;line-height:1.1}
+.hero p{color:#dcefe5;max-width:620px;line-height:1.5}
+.search{margin-top:22px;background:#fff;color:var(--ink);padding:12px;border-radius:14px;display:grid;grid-template-columns:1.4fr 1fr 1fr auto;gap:10px;align-items:end}
+label.l{display:block;font-size:11px;font-weight:800;color:var(--muted);margin:0 0 4px;text-transform:uppercase;letter-spacing:.5px}
+input,select,textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink)}
+.container{max-width:1160px;margin:auto;padding:28px 18px 50px}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column}
+.ph{height:190px;background:#dcebe2;position:relative}
+.ph img{width:100%;height:100%;object-fit:cover;display:block}
+.ph .nop{height:100%;display:flex;align-items:center;justify-content:center;font-size:40px;color:#7d9a8c}
+.badge{position:absolute;left:10px;top:10px;background:#e4f7ed;color:#086b45;font-size:11px;font-weight:800;padding:5px 9px;border-radius:20px}
+.cb{padding:14px;display:flex;flex-direction:column;gap:6px;flex:1}
+.loc{font-size:12px;color:var(--muted)}
+.cb h3{margin:0;font-size:16px}
+.price{color:var(--green);font-weight:850;margin-top:auto;padding-top:8px;font-size:17px}
+.price small{color:var(--muted);font-weight:600;font-size:12px}
+.empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:40px;background:#fff;border:1px dashed #cddbd2;border-radius:14px}
+.footer{background:#103e31;color:#dcefe5;padding:22px 18px;text-align:center;font-size:13px}
+.modal-back{position:fixed;inset:0;background:#071c16a6;z-index:30;display:none;align-items:center;justify-content:center;padding:14px}
+.modal-back.open{display:flex}
+.modal{background:#fff;border-radius:16px;width:100%;max-width:640px;max-height:92vh;overflow:auto;padding:20px}
+.mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px}
+.mh h2{margin:0;font-size:21px}
+.x{border:0;background:#eef5f0;border-radius:50%;width:34px;height:34px;font-size:20px;flex-shrink:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.full{grid-column:1/-1}
+.hint{font-size:12px;color:var(--muted);line-height:1.5;margin:6px 0 0}
+.gal{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.gal img,.gal video{width:100%;border-radius:10px;max-height:260px;object-fit:cover;background:#000}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+.toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#143e30;color:#fff;padding:12px 16px;border-radius:10px;z-index:90;display:none;max-width:90%;text-align:center}
+.toast.show{display:block}
+.tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.tabs button{flex:1;padding:9px;border:1px solid var(--line);background:#fff;border-radius:8px;font-weight:700;color:var(--muted);min-width:90px}
+.tabs button.on{background:var(--mint);color:var(--green);border-color:var(--green)}
+.item{border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:8px;display:flex;justify-content:space-between;gap:10px;align-items:center;cursor:pointer}
+#chatModal{padding:0;background:#0b141a}
+.modal-back#chatModal{align-items:stretch}
+.wa{width:100%;height:100%;display:flex;flex-direction:column;background:#0b141a;color:#e9edef}
+.wa-head{display:flex;align-items:center;gap:8px;background:#202c33;padding:8px 10px;flex-shrink:0;padding-top:calc(8px + env(safe-area-inset-top,0px))}
+.wa-av{width:40px;height:40px;border-radius:50%;background:#087b50;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0}
+.wa-title{flex:1;min-width:0;cursor:pointer}
+.wa-title b{display:block;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wa-sub{font-size:12px;color:#8696a0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wa-ib{border:0;background:none;color:#aebac1;font-size:22px;padding:4px 8px;line-height:1}
+.wa-body{flex:1;overflow:auto;padding:12px 6% 16px;display:flex;flex-direction:column;gap:3px;background:#0b141a;-webkit-overflow-scrolling:touch}
+.wa-day{align-self:center;background:#182229;color:#8696a0;font-size:12px;padding:5px 10px;border-radius:8px;margin:8px 0;flex-shrink:0}
+.wa-empty{align-self:center;color:#8696a0;font-size:13px;margin-top:30px}
+.msg{display:flex;width:100%}
+.msg.me{justify-content:flex-end}
+.bub{max-width:82%;padding:6px 8px 4px;border-radius:8px;font-size:15px;line-height:1.35;word-wrap:break-word;color:#e9edef;-webkit-touch-callout:none;user-select:none;-webkit-user-select:none;box-shadow:0 1px 1px rgba(0,0,0,.3)}
+.msg.them .bub{background:#202c33;border-top-left-radius:0}
+.bub{transition:transform .12s ease-out}
+.msg.me .bub{background:#005c4b;border-top-right-radius:0}
+.txt{white-space:pre-wrap;padding-right:62px}
+.meta{float:right;margin:8px 0 0 8px;font-size:11px;color:#8696a0;display:flex;gap:3px;align-items:center}
+.wa-body,.wa-body *,#sheetModal,#sheetModal *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.wa-body .txt{-webkit-user-select:none;user-select:none}
+.msg.sel .bub{box-shadow:0 0 0 2px #53bdeb,0 1px 1px rgba(0,0,0,.3)}
+.msg.sel{opacity:.85}
+#selBar{display:none;align-items:center;justify-content:space-between;gap:8px;background:#202c33;color:#e9edef;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));flex-shrink:0}
+#selBar.open{display:flex}
+#selBar button{background:none;border:0;color:#53bdeb;font-size:15px;font-weight:600;padding:8px 6px;cursor:pointer}
+#selBar button.danger{color:#f15c6d}
+.tick{display:inline-flex;align-items:center;color:#8696a0;margin-left:2px}
+.tick.read{color:#53bdeb}
+#photoViewer{position:fixed;inset:0;background:#000;z-index:200;display:none;flex-direction:column;align-items:center;justify-content:center}
+#photoViewer .pv-img{max-width:100%;max-height:100%;object-fit:contain}
+#photoViewer .pv-top{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:linear-gradient(rgba(0,0,0,.6),transparent);color:#fff}
+#photoViewer button{background:none;border:0;color:#fff;font-size:15px;padding:8px 10px;cursor:pointer}
+#recBar{position:fixed;left:12px;right:12px;bottom:76px;z-index:150;display:none;align-items:center;justify-content:space-between;background:#1f2c34;color:#fff;border-radius:24px;padding:10px 14px;box-shadow:0 2px 10px rgba(0,0,0,.4)}
+#recBar .rb-dot{width:10px;height:10px;border-radius:50%;background:#f15c6d;display:inline-block;margin-right:8px;animation:rbblink 1s infinite}
+@keyframes rbblink{50%{opacity:.3}}
+#recBar button{background:none;border:0;color:#f15c6d;font-size:18px;cursor:pointer}
+#recBar .rb-hint{font-size:13px;color:#8696a0}
+.quote{background:rgba(0,0,0,.22);border-left:4px solid #53bdeb;border-radius:6px;padding:5px 8px;font-size:13px;margin-bottom:4px;color:#cfd8dc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.img{display:block;max-width:250px;width:100%;border-radius:6px;margin-bottom:4px}
+.vn{display:flex;align-items:center;gap:8px;min-width:210px;max-width:240px;padding:2px 0 0}
+.vn-play{width:40px;height:40px;border-radius:50%;border:0;background:#00a884;color:#fff;font-size:14px;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0}
+.msg.me .vn-play{background:#d9fdd3;color:#005c4b}
+.vn-bar{flex:1;height:4px;background:rgba(255,255,255,.28);border-radius:4px;position:relative;cursor:pointer;min-width:70px}
+.vn-fill{height:100%;width:0;background:#53bdeb;border-radius:4px}
+.vn-time{font-size:11px;color:#c3cfd4;min-width:34px;text-align:right;font-variant-numeric:tabular-nums}
+.lnk{font-size:12px;color:#53bdeb;text-decoration:none;display:block;margin:2px 0 4px}
+.wa-foot{background:#202c33;padding:8px 8px calc(8px + env(safe-area-inset-bottom,0px));flex-shrink:0}
+.reply-bar{display:none;align-items:center;gap:8px;background:#1d2a31;border-left:4px solid #53bdeb;border-radius:8px;padding:6px 8px;margin-bottom:6px}
+.wa-row{display:flex;align-items:center;gap:6px}
+.wa-input{flex:1;background:#2a3942;border:0;color:#e9edef;border-radius:22px;padding:11px 14px;font-size:16px;outline:none;min-width:0}
+.wa-input::placeholder{color:#8696a0}
+.wa-circle{width:46px;height:46px;border-radius:50%;border:0;background:#00a884;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sheet-back{position:fixed;inset:0;background:#0009;z-index:70;display:none;align-items:flex-end;justify-content:center}
+.sheet-back.open{display:flex}
+.sheet{background:#fff;width:100%;max-width:520px;border-radius:16px 16px 0 0;padding:6px 0 calc(6px + env(safe-area-inset-bottom,0px))}
+.sheet button{display:block;width:100%;padding:15px 18px;border:0;background:none;font-size:16px;text-align:left;border-bottom:1px solid #eee;color:var(--ink)}
+.sheet button.danger{color:#b42318}
+.sheet button.cancel{text-align:center;color:var(--muted);font-weight:700}
+@media(max-width:860px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.search{grid-template-columns:1fr 1fr}.search .btn{grid-column:1/-1}}
+@media(max-width:560px){.cards{grid-template-columns:1fr}.grid2{grid-template-columns:1fr}.gal{grid-template-columns:1fr}.brand{font-size:19px}.nav .btn{padding:9px 10px;font-size:13px}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="nav">
+    <div class="brand">🇨🇬 ⌂ Maison <span>Facile</span></div>
+    <div id="navBtns" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end"></div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-in">
+    <div style="font-size:12px;letter-spacing:1.5px;color:#c7efdb;font-weight:800">VOTRE LOGEMENT, PLUS SIMPLEMENT</div>
+    <h1>Trouvez votre maison à louer partout au Congo.</h1>
+    <p>Consultez les annonces avec photos et vidéos, appelez le propriétaire ou écrivez-lui directement dans l'application.</p>
+    <div class="search">
+      <div><label class="l" for="city">Ville ou quartier</label><input id="city" placeholder="Ex. : Brazzaville, Talangaï, Pointe-Noire"></div>
+      <div><label class="l" for="maxPrice">Loyer maximum</label>
+        <select id="maxPrice">
+          <option value="">Tous les prix</option>
+          <option value="100000">Jusqu'à 100 000</option>
+          <option value="200000">Jusqu'à 200 000</option>
+          <option value="350000">Jusqu'à 350 000</option>
+          <option value="500000">Jusqu'à 500 000</option>
+        </select></div>
+      <div><label class="l" for="type">Type</label>
+        <select id="type">
+          <option value="">Tous les types</option>
+          <option>Maison</option><option>Appartement</option><option>Studio</option><option>Chambre</option>
+        </select></div>
+      <button class="btn" id="searchBtn">Rechercher</button>
+    </div>
+  </div>
+</section>
+
+<main class="container">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px;gap:10px">
+    <h2 style="margin:0;font-size:24px">Logements disponibles</h2>
+    <span id="count" style="color:var(--green);font-weight:700;font-size:14px"></span>
+  </div>
+  <div class="cards" id="cards"></div>
+</main>
+
+<footer class="footer">🇨🇬 Maison Facile · La location partout au Congo · Publication gratuite · <a href="#" onclick="showM('termsModal');return false" style="color:#dcefe5">Conditions et confidentialité</a></footer>
+
+<!-- Connexion / inscription -->
+<div class="modal-back" id="authModal"><div class="modal">
+  <div class="mh"><h2>Mon compte</h2><button class="x" data-close="authModal">×</button></div>
+  <div class="tabs">
+    <button id="tabLogin" class="on" type="button">Se connecter</button>
+    <button id="tabSign" type="button">Créer un compte</button>
+  </div>
+  <form id="authForm" class="grid2">
+    <div id="signFields" class="grid2 full" style="display:none">
+      <div><label class="l" for="aName">Nom complet</label><input id="aName"></div>
+      <div><label class="l" for="aPhone">Numéro (facultatif)</label><input id="aPhone" placeholder="Ex. : +242061234567 ou +55…"></div>
+    </div>
+    <div class="full"><label class="l" for="aEmail">E-mail</label><input id="aEmail" type="email" required></div>
+    <div class="full"><label class="l" for="aPass">Mot de passe (6 caractères minimum)</label><input id="aPass" type="password" minlength="6" required></div>
+    <label class="full" id="termsRow" style="display:none;font-size:13px;color:var(--muted)"><input type="checkbox" id="aTerms" style="width:auto"> J'accepte les <a href="#" onclick="showM('termsModal');return false">conditions d'utilisation</a></label>
+    <div class="full"><button class="btn" id="authSubmit" style="width:100%" type="submit">Se connecter</button></div>
+    <div class="full" style="text-align:center"><button type="button" onclick="forgotPassword()" style="border:0;background:none;color:var(--green);font-weight:700">Mot de passe oublié ?</button></div>
+  </form>
+</div></div>
+
+<!-- Publier / modifier une annonce -->
+<div class="modal-back" id="publishModal"><div class="modal">
+  <div class="mh"><h2>Publier un logement</h2><button class="x" data-close="publishModal">×</button></div>
+  <form id="pubForm" class="grid2">
+    <div class="full"><label class="l" for="pTitle">Titre de l'annonce</label><input id="pTitle" required maxlength="80" placeholder="Ex. : Maison avec cour à Bacongo"></div>
+    <div><label class="l" for="pType">Type</label>
+      <select id="pType" required><option>Maison</option><option>Appartement</option><option>Studio</option><option>Chambre</option></select></div>
+    <div><label class="l" for="pRooms">Nombre de chambres</label>
+      <select id="pRooms"><option value="">Non précisé</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5+</option></select></div>
+    <div><label class="l" for="pCity">Ville</label>
+      <input id="pCity" value="Brazzaville" list="cities" required>
+      <datalist id="cities"><option>Brazzaville</option><option>Pointe-Noire</option><option>Dolisie</option><option>Nkayi</option><option>Ouesso</option><option>Oyo</option><option>Madingou</option><option>Mossendjo</option><option>Kinkala</option><option>Impfondo</option><option>Sibiti</option></datalist></div>
+    <div><label class="l" for="pQuartier">Quartier</label><input id="pQuartier" required placeholder="Ex. : Talangaï"></div>
+    <div><label class="l" for="pPrice">Loyer mensuel (FCFA)</label><input id="pPrice" type="number" min="1" required></div>
+    <div><label class="l" for="pOwner">Votre nom</label><input id="pOwner" required></div>
+    <div><label class="l" for="pCall">Numéro à appeler (+242…)</label><input id="pCall" required placeholder="+242061234567"></div>
+    <div><label class="l" for="pWa">Numéro WhatsApp (facultatif)</label><input id="pWa" placeholder="+242061234567"></div>
+    <div class="full"><label class="l" for="pDesc">Description</label><textarea id="pDesc" rows="3" required maxlength="700" placeholder="Pièces, eau, électricité, cour, conditions de location…"></textarea></div>
+    <div class="full"><label class="l" for="pFiles">Photos (1 à 6)</label><input id="pFiles" type="file" accept="image/*" multiple required></div>
+    <div class="full"><label class="l" for="pVideos">Vidéos (facultatif : 2 maximum, 40 Mo chacune)</label><input id="pVideos" type="file" accept="video/*" multiple></div>
+    <p class="hint full">Ne publiez pas de pièce d'identité. Demandez l'accord du propriétaire avant de publier ses photos.</p>
+    <div class="full"><button class="btn" id="pubSubmit" style="width:100%" type="submit">Publier l'annonce</button></div>
+  </form>
+</div></div>
+
+<!-- Fiche d'une annonce -->
+<div class="modal-back" id="detailModal"><div class="modal">
+  <div class="mh"><span></span><button class="x" data-close="detailModal">×</button></div>
+  <div id="detailBody"></div>
+</div></div>
+
+<!-- Conversation (style WhatsApp) -->
+<div class="modal-back" id="chatModal"><div class="wa">
+  <div class="wa-head">
+    <button class="wa-ib" type="button" onclick="hideM('chatModal')">←</button>
+    <div class="wa-av" id="waAv">?</div>
+    <div class="wa-title" onclick="openChatInfo()"><b id="waTitle"></b><div class="wa-sub" id="waSub"></div></div>
+    <button class="wa-ib" id="waMenu" type="button">⋮</button>
+  </div>
+  <div class="wa-body" id="waBody"></div>
+  <div class="wa-foot">
+    <div class="reply-bar" id="replyBar">
+      <div style="flex:1;min-width:0"><div style="font-size:12px;color:#53bdeb;font-weight:700">Réponse</div><div id="replyTxt" class="wa-sub"></div></div>
+      <button class="wa-ib" type="button" onclick="cancelReply()">✕</button>
+    </div>
+    <form id="waForm" class="wa-row">
+      <button class="wa-ib" id="attachBtn" type="button" title="Photo">📎</button>
+      <input id="photoFile" type="file" accept="image/*" style="display:none">
+      <input id="waInput" class="wa-input" placeholder="Message" maxlength="1000" autocomplete="off">
+      <button id="micBtn" class="wa-circle" type="button" title="Message vocal">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v1a7 7 0 0 0 14 0v-1"/><line x1="12" y1="18" x2="12" y2="22"/></svg>
+      </button>
+      <button id="sendBtn" class="wa-circle" type="submit" style="display:none" title="Envoyer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M3 20l18-8L3 4v6l12 2-12 2z"/></svg>
+      </button>
+    </form>
+  </div>
+</div></div>
+
+<!-- Actions sur un message ou une conversation -->
+<div class="sheet-back" id="sheetModal"><div class="sheet"><div id="sheetList"></div></div></div>
+
+<!-- Boîte de messages -->
+<div class="modal-back" id="inboxModal"><div class="modal">
+  <div class="mh"><h2>Mes messages</h2><button class="x" data-close="inboxModal">×</button></div>
+  <div id="inboxBody"></div>
+</div></div>
+
+<!-- Mes annonces -->
+<div class="modal-back" id="mineModal"><div class="modal">
+  <div class="mh"><h2>Mes annonces</h2><button class="x" data-close="mineModal">×</button></div>
+  <div id="mineBody"></div>
+  <div style="margin-top:18px;text-align:center"><button class="btn danger" onclick="deleteAccount()">Supprimer mon compte</button>
+  <p class="hint">Vos annonces, photos et messages seront effacés définitivement.</p></div>
+</div></div>
+
+<!-- Administration (visible uniquement pour l'administrateur) -->
+<div class="modal-back" id="adminModal"><div class="modal" style="max-width:720px">
+  <div class="mh"><h2>Administration</h2><button class="x" data-close="adminModal">×</button></div>
+  <div class="tabs">
+    <button id="atStats" class="on" type="button" onclick="renderAdmin('stats')">Résumé</button>
+    <button id="atListings" type="button" onclick="renderAdmin('listings')">Annonces</button>
+    <button id="atUsers" type="button" onclick="renderAdmin('users')">Utilisateurs</button>
+    <button id="atMsgs" type="button" onclick="renderAdmin('messages')">Messages</button>
+    <button id="atReports" type="button" onclick="renderAdmin('reports')">Signalements</button>
+  </div>
+  <div id="adminBody"></div>
+</div></div>
+
+<!-- Nouveau mot de passe -->
+<div class="modal-back" id="pwdModal"><div class="modal">
+  <div class="mh"><h2>Nouveau mot de passe</h2></div>
+  <div><label class="l" for="pNew">Mot de passe (6 caractères minimum)</label><input id="pNew" type="password" minlength="6"></div>
+  <div style="margin-top:12px"><button class="btn" style="width:100%" onclick="setNewPassword()">Enregistrer</button></div>
+</div></div>
+
+<!-- Conditions d'utilisation -->
+<div class="modal-back" id="termsModal"><div class="modal">
+  <div class="mh"><h2>Conditions d'utilisation et confidentialité</h2><button class="x" data-close="termsModal">×</button></div>
+  <div style="line-height:1.6;font-size:14px">
+    <p><strong>Ce qu'est Maison Facile.</strong> Une application qui met en relation des locataires et des propriétaires au Congo. Maison Facile ne possède aucun logement et ne perçoit aucun loyer.</p>
+    <p><strong>Annonces.</strong> Chaque propriétaire est responsable de ses annonces : photos, prix et disponibilité doivent être exacts. Les fausses annonces, les arnaques et les contenus illégaux sont interdits et peuvent être retirés sans préavis.</p>
+    <p><strong>Vos précautions.</strong> Visitez le logement et vérifiez les documents avant de verser de l'argent. Ne payez jamais un logement que vous n'avez pas visité.</p>
+    <p><strong>Données personnelles.</strong> Nous conservons votre nom, votre e-mail, votre numéro, vos annonces, vos messages et vos photos, uniquement pour faire fonctionner le service. Nous ne les vendons pas. Vous pouvez supprimer votre compte à tout moment depuis « Mes annonces ».</p>
+    <p><strong>Signalement et blocage.</strong> Vous pouvez signaler une annonce ou bloquer une personne. L'équipe examine les signalements.</p>
+    <p><strong>Contact.</strong> franchisvanouch@gmail.com</p>
+  </div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL = 'https://yampzgtishizoqslprcl.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_f0gXCeUyWQAG94-_XOp5DA_-pYPiF4b';
+const BUCKET = 'listing-media';
+const ADMIN_EMAIL = 'franchisvanouch@gmail.com';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+/* ---------- Outils ---------- */
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money = n => new Intl.NumberFormat('fr-FR').format(Number(n) || 0) + ' FCFA';
+const digits = s => String(s || '').replace(/\D/g, '');
+const normPhone = s => String(s || '').replace(/[\s().-]/g, '');
+const phoneOk = p => /^\+\d{9,15}$/.test(p);
+const mediaUrl = p => sb.storage.from(BUCKET).getPublicUrl(p).data.publicUrl;
+const safeName = n => n.replace(/[^a-zA-Z0-9._-]/g, '_');
+const isAdmin = () => !!me && String(me.email || '').toLowerCase() === ADMIN_EMAIL;
+const timeOf = iso => new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+const dayKey = iso => new Date(iso).toDateString();
+function dayLabel(iso) {
+  const d = new Date(iso), today = new Date(), yest = new Date(Date.now() - 864e5);
+  if (d.toDateString() === today.toDateString()) return "Aujourd'hui";
+  if (d.toDateString() === yest.toDateString()) return 'Hier';
+  return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+function toast(t) {
+  const e = $('toast');
+  e.textContent = t;
+  e.classList.add('show');
+  clearTimeout(toast.t);
+  toast.t = setTimeout(() => e.classList.remove('show'), 3500);
+}
+function showM(id) { $(id).classList.add('open'); document.body.style.overflow = 'hidden'; }
+function hideM(id) { $(id).classList.remove('open'); document.body.style.overflow = ''; }
+document.querySelectorAll('[data-close]').forEach(b => b.onclick = () => hideM(b.dataset.close));
+document.querySelectorAll('.modal-back').forEach(m => m.addEventListener('click', e => { if (e.target === m) hideM(m.id); }));
+$('sheetModal').addEventListener('click', e => { if (e.target === $('sheetModal')) hideM('sheetModal'); });
+function traduire(msg) {
+  if (/Invalid login/i.test(msg)) return 'E-mail ou mot de passe incorrect.';
+  if (/already registered/i.test(msg)) return 'Un compte existe déjà avec cet e-mail.';
+  if (/at least 6/i.test(msg)) return 'Le mot de passe doit contenir au moins 6 caractères.';
+  if (/Email not confirmed/i.test(msg)) return "Votre e-mail n'est pas encore confirmé. Désactivez la confirmation dans Supabase.";
+  return msg;
+}
+
+let me = null, listings = [], current = null, editingId = null, adminData = null;
+let chat = null, seen = new Set(), msgCache = new Map(), replyTo = null, ephemeralHours = 0, blockedNow = false, lastDay = '';
+let channel = null, presenceCh = null, onlineIds = new Set(), typingFromPartner = false, partnerNames = {};
+
+/* ---------- Compte ---------- */
+let authMode = 'login';
+function setAuthMode(m) {
+  authMode = m;
+  $('tabLogin').classList.toggle('on', m === 'login');
+  $('tabSign').classList.toggle('on', m === 'signup');
+  $('signFields').style.display = m === 'signup' ? 'grid' : 'none';
+  $('termsRow').style.display = m === 'signup' ? 'block' : 'none';
+  $('authSubmit').textContent = m === 'signup' ? 'Créer mon compte' : 'Se connecter';
+}
+$('tabLogin').onclick = () => setAuthMode('login');
+$('tabSign').onclick = () => setAuthMode('signup');
+function openAuth() { setAuthMode('login'); showM('authModal'); }
+
+$('authForm').onsubmit = async e => {
+  e.preventDefault();
+  const email = $('aEmail').value.trim(), password = $('aPass').value;
+  $('authSubmit').disabled = true;
+  try {
+    if (authMode === 'login') {
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      hideM('authModal');
+      toast('Connexion réussie.');
+    } else {
+      if (!$('aTerms').checked) throw new Error("Acceptez les conditions d'utilisation pour créer votre compte.");
+      const full_name = $('aName').value.trim();
+      const phone = normPhone($('aPhone').value);
+      if (!full_name) throw new Error('Indiquez votre nom.');
+      if (phone && !phoneOk(phone)) throw new Error('Numéro invalide. Commencez par + et l\'indicatif du pays, par exemple +242061234567.');
+      const { data, error } = await sb.auth.signUp({ email, password, options: { data: { full_name, phone } } });
+      if (error) throw error;
+      if (data.session) { hideM('authModal'); toast('Compte créé. Bienvenue !'); }
+      else { toast('Compte créé. Connectez-vous avec votre e-mail et mot de passe.'); setAuthMode('login'); }
+    }
+  } catch (err) {
+    toast(traduire(err.message || 'Erreur de connexion.'));
+  } finally {
+    $('authSubmit').disabled = false;
+  }
+};
+
+async function forgotPassword() {
+  const email = $('aEmail').value.trim();
+  if (!email) { toast("Saisissez d'abord votre e-mail."); return; }
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+  toast(error ? error.message : 'Lien envoyé. Vérifiez votre e-mail et les spams.');
+}
+async function setNewPassword() {
+  const password = $('pNew').value;
+  if (password.length < 6) { toast('Le mot de passe doit contenir au moins 6 caractères.'); return; }
+  const { error } = await sb.auth.updateUser({ password });
+  if (error) { toast(traduire(error.message)); return; }
+  hideM('pwdModal');
+  toast('Mot de passe mis à jour.');
+}
+async function logout() {
+  try {
+    if ('serviceWorker' in navigator) {
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.getSubscription();
+      if (sub && me) await sb.from('push_subscriptions').delete().eq('endpoint', sub.endpoint).eq('user_id', me.id);
+    }
+  } catch (e) { /* ignore */ }
+  await sb.auth.signOut();
+  toast('Vous êtes déconnecté.');
+}
+
+// Rattache l'abonnement de cet appareil au compte actuellement connecté (sans demander de permission si déjà accordée)
+async function refreshPush() {
+  if (!me || !('serviceWorker' in navigator) || !('PushManager' in window)) return;
+  if (Notification.permission !== 'granted') return;
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: keyBytes(VAPID_PUBLIC) });
+    const j = sub.toJSON();
+    await sb.from('push_subscriptions').upsert(
+      { user_id: me.id, endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth },
+      { onConflict: 'endpoint' }
+    );
+  } catch (e) { /* ignore */ }
+}
+
+async function shareApp() {
+  const url = window.location.origin;
+  const data = { title: 'Maison Facile', text: 'Trouvez ou publiez un logement au Congo sur Maison Facile', url };
+  try {
+    if (navigator.share) { await navigator.share(data); return; }
+    await navigator.clipboard.writeText(url);
+    toast('Lien copié : ' + url);
+  } catch (e) { /* partage annulé */ }
+}
+function renderNav() {
+  const b = [];
+  if (me) {
+    b.push('<button class="btn light" onclick="openInbox()">Messages</button>');
+    b.push('<button class="btn light" onclick="openMine()">Mes annonces</button>');
+  } else {
+    b.push('<button class="btn light" onclick="openAuth()">Se connecter</button>');
+  }
+  if (me) b.push('<button class="btn light" onclick="enableNotifications()">🔔 Notifications</button>');
+  if (isAdmin()) b.push('<button class="btn danger" onclick="openAdmin()">Admin</button>');
+  b.push('<button class="btn" onclick="openPublish()">+ Publier</button>');
+  b.push('<button class="btn light" onclick="shareApp()">🔗 Partager</button>');
+  if (me) b.push('<button class="btn light" onclick="logout()">Quitter</button>');
+  $('navBtns').innerHTML = b.join('');
+}
+
+sb.auth.onAuthStateChange((event, session) => {
+  if (event === 'PASSWORD_RECOVERY') showM('pwdModal');
+  me = session?.user || null;
+  renderNav();
+  if (me) {
+    const m = me.user_metadata || {};
+    if (m.full_name) sb.from('profiles').upsert({ id: me.id, full_name: m.full_name, phone: m.phone || '' }).then(() => {});
+    subscribe();
+    refreshPush();
+    startPresence();
+    markDeliveredAll();
+  } else {
+    if (channel) { sb.removeChannel(channel); channel = null; }
+    if (presenceCh) { sb.removeChannel(presenceCh); presenceCh = null; }
+  }
+});
+
+/* ---------- Annonces ---------- */
+async function loadListings() {
+  let q = sb.from('listings').select('*').order('created_at', { ascending: false }).limit(120);
+  const city = $('city').value.replace(/[,()*%]/g, ' ').trim();
+  if (city) q = q.or(`city.ilike.*${city}*,neighborhood.ilike.*${city}*`);
+  const max = Number($('maxPrice').value);
+  if (max) q = q.lte('price', max);
+  const t = $('type').value;
+  if (t) q = q.eq('listing_type', t);
+  const { data, error } = await q;
+  if (error) { toast('Impossible de charger les annonces.'); return; }
+  listings = data || [];
+  renderCards();
+}
+
+function renderCards() {
+  $('count').textContent = listings.length + ' annonce' + (listings.length > 1 ? 's' : '');
+  if (!listings.length) {
+    $('cards').innerHTML = '<div class="empty"><strong>Aucun logement trouvé.</strong><br>Essayez un autre quartier ou un autre loyer.</div>';
+    return;
+  }
+  $('cards').innerHTML = listings.map(l => {
+    const img = l.photos?.[0] ? `<img src="${mediaUrl(l.photos[0])}" alt="${esc(l.title)}" loading="lazy">` : '<div class="nop">⌂</div>';
+    return `<article class="card" onclick="openDetail('${l.id}')">
+      <div class="ph">${img}<span class="badge">${esc(l.listing_type)}</span></div>
+      <div class="cb">
+        <div class="loc">⌖ ${esc(l.city)} · ${esc(l.neighborhood)}</div>
+        <h3>${esc(l.title)}</h3>
+        <div class="loc">${l.rooms ? esc(l.rooms) + ' chambre(s)' : ''}</div>
+        <div class="price">${money(l.price)} <small>/ mois</small></div>
+      </div></article>`;
+  }).join('');
+}
+
+async function openDetail(id) {
+  const { data: l, error } = await sb.from('listings').select('*').eq('id', id).single();
+  if (error || !l) { toast('Annonce introuvable.'); return; }
+  current = l;
+  const media = [
+    ...(l.photos || []).map(p => `<img src="${mediaUrl(p)}" alt="Photo du logement">`),
+    ...(l.videos || []).map(v => `<video src="${mediaUrl(v)}" controls playsinline preload="metadata"></video>`)
+  ].join('');
+  const isOwner = me && me.id === l.owner_id;
+  const tel = digits(l.call_phone);
+  const wa = digits(l.whatsapp || l.call_phone);
+  const waText = encodeURIComponent('Bonjour, je vous contacte au sujet de votre annonce Maison Facile : ' + l.title);
+  $('detailBody').innerHTML = `
+    <div class="gal">${media}</div>
+    <div style="font-size:24px;color:var(--green);font-weight:850">${money(l.price)} <span style="font-size:13px;color:var(--muted)">/ mois</span></div>
+    <p class="loc">⌖ ${esc(l.city)} · ${esc(l.neighborhood)} · ${esc(l.listing_type)}${l.rooms ? ' · ' + esc(l.rooms) + ' chambre(s)' : ''}</p>
+    <h3 style="margin:6px 0">${esc(l.title)}</h3>
+    <p style="line-height:1.5">${esc(l.description)}</p>
+    <p><strong>Propriétaire :</strong> ${esc(l.owner_name)}</p>
+    <div class="actions">
+      <a class="btn" href="tel:+${tel}">📞 Appeler ${esc(l.call_phone)}</a>
+      ${l.whatsapp || l.call_phone ? `<a class="btn light" target="_blank" rel="noopener" href="https://wa.me/${wa}?text=${waText}">WhatsApp</a>` : ''}
+      ${isOwner ? '<button class="btn light" onclick="editListing()">Modifier</button>' : '<button class="btn light" onclick="startChat()">✉ Envoyer un message</button>'}
+      ${isOwner ? `<button class="btn danger" onclick="deleteListing('${l.id}')">Supprimer l'annonce</button>` : `<button class="btn light" onclick="reportListing('${l.id}')">Signaler</button>`}
+    </div>
+    <div class="hint">Conseil : visitez le logement et vérifiez les documents avant de verser de l'argent.</div>`;
+  showM('detailModal');
+}
+
+async function deleteListing(id) {
+  if (!confirm('Supprimer cette annonce ?')) return;
+  const { data: l } = await sb.from('listings').select('photos,videos').eq('id', id).single();
+  const paths = [...(l?.photos || []), ...(l?.videos || [])];
+  if (paths.length) await sb.storage.from(BUCKET).remove(paths);
+  const { error } = await sb.from('listings').delete().eq('id', id);
+  if (error) { toast('Suppression impossible.'); return; }
+  hideM('detailModal');
+  toast('Annonce supprimée.');
+  loadListings();
+  openMine();
+}
+
+async function reportListing(id) {
+  if (!me) { openAuth(); return; }
+  const reason = prompt('Pourquoi signalez-vous cette annonce ? (arnaque, fausses photos, prix abusif…)');
+  if (!reason || !reason.trim()) return;
+  const { error } = await sb.from('reports').insert({ reporter: me.id, listing_id: id, reason: reason.trim().slice(0, 300) });
+  toast(error ? 'Signalement impossible.' : "Merci. L'annonce sera examinée.");
+}
+
+/* ---------- Publier et modifier ---------- */
+function openPublish() {
+  if (!me) { openAuth(); toast('Créez un compte ou connectez-vous pour publier.'); return; }
+  editingId = null;
+  $('pubForm').reset();
+  $('pCity').value = 'Brazzaville';
+  $('pFiles').required = true;
+  $('pubSubmit').textContent = "Publier l'annonce";
+  showM('publishModal');
+}
+
+function editListing() {
+  const l = current;
+  if (!me || me.id !== l.owner_id) return;
+  editingId = l.id;
+  hideM('detailModal');
+  $('pTitle').value = l.title;
+  $('pType').value = l.listing_type;
+  $('pRooms').value = l.rooms || '';
+  $('pCity').value = l.city;
+  $('pQuartier').value = l.neighborhood;
+  $('pPrice').value = l.price;
+  $('pOwner').value = l.owner_name;
+  $('pCall').value = l.call_phone;
+  $('pWa').value = l.whatsapp || '';
+  $('pDesc').value = l.description;
+  $('pFiles').required = false;
+  $('pFiles').value = '';
+  $('pubSubmit').textContent = 'Enregistrer les modifications';
+  showM('publishModal');
+}
+
+$('pubForm').onsubmit = async e => {
+  e.preventDefault();
+  if (editingId) return saveEdit();
+  const photos = [...$('pFiles').files];
+  const videos = [...$('pVideos').files];
+  const call = normPhone($('pCall').value);
+  const wat = normPhone($('pWa').value);
+  if (!photos.length) { toast('Ajoutez au moins une photo.'); return; }
+  if (photos.length > 6) { toast('Maximum 6 photos.'); return; }
+  if (videos.length > 2) { toast('Maximum 2 vidéos.'); return; }
+  if (!photos.every(p => p.type.startsWith('image/'))) { toast('Les photos doivent être des images.'); return; }
+  if (videos.some(v => v.size > 40 * 1024 * 1024)) { toast('Chaque vidéo doit faire moins de 40 Mo.'); return; }
+  if (!phoneOk(call)) { toast('Numéro à appeler invalide. Exemple : +242061234567'); return; }
+  if (wat && !phoneOk(wat)) { toast('Numéro WhatsApp invalide.'); return; }
+  $('pubSubmit').disabled = true;
+  try {
+    const stamp = Date.now();
+    const upload = async (file, name) => {
+      const path = `${me.id}/${stamp}-${name}`;
+      const { error } = await sb.storage.from(BUCKET).upload(path, file, { contentType: file.type, upsert: false });
+      if (error) throw error;
+      return path;
+    };
+    const photoPaths = [], videoPaths = [];
+    for (let i = 0; i < photos.length; i++) { toast(`Envoi des photos ${i + 1}/${photos.length}…`); photoPaths.push(await upload(photos[i], `photo${i}-${safeName(photos[i].name)}`)); }
+    for (let i = 0; i < videos.length; i++) { toast(`Envoi de la vidéo ${i + 1}/${videos.length}…`); videoPaths.push(await upload(videos[i], `video${i}-${safeName(videos[i].name)}`)); }
+    const { error } = await sb.from('listings').insert({
+      owner_id: me.id,
+      title: $('pTitle').value.trim(),
+      listing_type: $('pType').value,
+      city: $('pCity').value.trim(),
+      neighborhood: $('pQuartier').value.trim(),
+      price: Number($('pPrice').value),
+      rooms: $('pRooms').value || null,
+      description: $('pDesc').value.trim(),
+      owner_name: $('pOwner').value.trim(),
+      call_phone: call,
+      whatsapp: wat || null,
+      photos: photoPaths,
+      videos: videoPaths
+    });
+    if (error) throw error;
+    $('pubForm').reset();
+    $('pCity').value = 'Brazzaville';
+    hideM('publishModal');
+    toast('Annonce publiée !');
+    loadListings();
+  } catch (err) {
+    toast('Publication impossible : ' + (err.message || 'erreur'));
+  } finally {
+    $('pubSubmit').disabled = false;
+  }
+};
+
+async function saveEdit() {
+  const call = normPhone($('pCall').value), wat = normPhone($('pWa').value);
+  if (!phoneOk(call)) { toast('Numéro à appeler invalide.'); return; }
+  if (wat && !phoneOk(wat)) { toast('Numéro WhatsApp invalide.'); return; }
+  const newPhotos = [...$('pFiles').files], newVideos = [...$('pVideos').files];
+  if (newPhotos.length > 6) { toast('Maximum 6 photos.'); return; }
+  if (newVideos.length > 2) { toast('Maximum 2 vidéos.'); return; }
+  $('pubSubmit').disabled = true;
+  try {
+    const stamp = Date.now();
+    const upload = async (file, name) => {
+      const path = `${me.id}/${stamp}-${name}`;
+      const { error } = await sb.storage.from(BUCKET).upload(path, file, { contentType: file.type, upsert: false });
+      if (error) throw error;
+      return path;
+    };
+    let photos = current.photos || [], videos = current.videos || [];
+    if (newPhotos.length) { toast('Envoi des nouvelles photos…'); photos = []; for (let i = 0; i < newPhotos.length; i++) photos.push(await upload(newPhotos[i], `photo${i}-${safeName(newPhotos[i].name)}`)); }
+    if (newVideos.length) { toast('Envoi des nouvelles vidéos…'); videos = []; for (let i = 0; i < newVideos.length; i++) videos.push(await upload(newVideos[i], `video${i}-${safeName(newVideos[i].name)}`)); }
+    const { error } = await sb.from('listings').update({
+      title: $('pTitle').value.trim(),
+      listing_type: $('pType').value,
+      city: $('pCity').value.trim(),
+      neighborhood: $('pQuartier').value.trim(),
+      price: Number($('pPrice').value),
+      rooms: $('pRooms').value || null,
+      description: $('pDesc').value.trim(),
+      owner_name: $('pOwner').value.trim(),
+      call_phone: call,
+      whatsapp: wat || null,
+      photos, videos
+    }).eq('id', editingId);
+    if (error) throw error;
+    if (newPhotos.length && current.photos?.length) await sb.storage.from(BUCKET).remove(current.photos);
+    editingId = null;
+    $('pubForm').reset();
+    $('pCity').value = 'Brazzaville';
+    $('pFiles').required = true;
+    $('pubSubmit').textContent = "Publier l'annonce";
+    hideM('publishModal');
+    toast('Annonce modifiée.');
+    loadListings();
+  } catch (err) {
+    toast('Modification impossible : ' + (err.message || 'erreur'));
+  } finally {
+    $('pubSubmit').disabled = false;
+  }
+}
+
+/* ---------- Messagerie style WhatsApp ---------- */
+function startChat() {
+  if (!me) { hideM('detailModal'); openAuth(); toast('Connectez-vous pour envoyer un message.'); return; }
+  openChat(current.id, current.title, current.owner_id);
+}
+
+async function loadPartnerName(id) {
+  if (!partnerNames[id]) {
+    const { data } = await sb.from('profiles').select('full_name').eq('id', id).maybeSingle();
+    partnerNames[id] = data?.full_name || '';
+  }
+  if (chat && chat.partnerId === id) {
+    const name = partnerNames[id] || chat.title;
+    $('waTitle').textContent = name;
+    $('waAv').textContent = (name || '?').trim().charAt(0).toUpperCase();
+  }
+}
+
+async function openChat(listingId, title, partnerId) {
+  if (!me) { openAuth(); return; }
+  chat = { listingId, partnerId, title };
+  seen = new Set(); msgCache.clear(); replyTo = null; lastDay = '';
+  cancelReply();
+  hideM('inboxModal'); hideM('detailModal');
+  $('waTitle').textContent = partnerNames[partnerId] || title;
+  $('waAv').textContent = (partnerNames[partnerId] || title || '?').trim().charAt(0).toUpperCase();
+  $('waBody').innerHTML = '<p class="wa-empty">Chargement…</p>';
+  $('waInput').value = ''; toggleSendMic();
+  showM('chatModal');
+  loadPartnerName(partnerId);
+  updatePresenceLabel();
+  await Promise.all([loadEphemeral(listingId, partnerId), loadBlock(partnerId)]);
+  $('waInput').disabled = blockedNow;
+  $('waInput').placeholder = blockedNow ? 'Personne bloquée' : 'Message';
+  const { data, error } = await pairQuery().order('created_at', { ascending: false }).limit(50);
+  if (error) { toast('Messages indisponibles.'); return; }
+  const batch = data.slice().reverse();
+  chat.oldest = batch[0]?.created_at || null;
+  chat.hasMore = data.length === 50;
+  markDelivered(batch.filter(m => m.receiver_id === me.id && !m.delivered_at).map(m => m.id));
+  markRead(listingId, partnerId);
+  renderAll(visibleOf(batch));
+}
+
+/* Historique : anciens messages chargés en remontant */
+function pairQuery() {
+  return sb.from('messages').select('*').eq('listing_id', chat.listingId)
+    .or(`and(sender_id.eq.${me.id},receiver_id.eq.${chat.partnerId}),and(sender_id.eq.${chat.partnerId},receiver_id.eq.${me.id})`);
+}
+function visibleOf(list) {
+  return list.filter(m => !(m.hidden_for || []).includes(me.id) && (!m.expires_at || new Date(m.expires_at) > new Date()));
+}
+$('waBody').addEventListener('scroll', () => {
+  if (!chat || !chat.hasMore || chat.loadingOlder || $('waBody').scrollTop > 80) return;
+  loadOlder();
+});
+async function loadOlder() {
+  const cur = chat;
+  cur.loadingOlder = true;
+  const { data, error } = await pairQuery().lt('created_at', cur.oldest).order('created_at', { ascending: false }).limit(50);
+  if (chat !== cur) return;
+  if (error) { toast('Impossible de charger les anciens messages.'); cur.loadingOlder = false; return; }
+  const batch = data.slice().reverse();
+  cur.hasMore = data.length === 50;
+  if (batch.length) { cur.oldest = batch[0].created_at; prependMsgs(visibleOf(batch)); }
+  cur.loadingOlder = false;
+}
+function prependMsgs(list) {
+  if (!list.length) return;
+  const body = $('waBody');
+  const oldSep = body.querySelector('.wa-day');
+  const firstMsg = body.querySelector('.msg');
+  const firstAt = firstMsg ? msgCache.get(firstMsg.dataset.msg)?.created_at : null;
+  let html = '', prev = '';
+  list.forEach(m => {
+    msgCache.set(m.id, m);
+    seen.add(m.id);
+    const d = dayKey(m.created_at);
+    if (d !== prev) { html += `<div class="wa-day">${dayLabel(m.created_at)}</div>`; prev = d; }
+    html += makeMsgHtml(m);
+  });
+  if (oldSep && firstAt && dayKey(firstAt) === prev && oldSep.textContent === dayLabel(firstAt)) oldSep.remove();
+  const before = body.scrollHeight;
+  const wrap = document.createElement('div');
+  wrap.innerHTML = html;
+  body.prepend(...Array.from(wrap.childNodes));
+  body.scrollTop += body.scrollHeight - before;
+}
+
+function renderAll(list) {
+  const body = $('waBody');
+  body.innerHTML = '';
+  lastDay = '';
+  list.forEach(m => { msgCache.set(m.id, m); seen.add(m.id); appendMsg(m); });
+  if (!list.length) body.innerHTML = '<p class="wa-empty">Aucun message. Dites bonjour !</p>';
+  scrollBottom();
+}
+
+function appendMsg(m) {
+  const body = $('waBody');
+  const day = dayKey(m.created_at);
+  if (day !== lastDay) {
+    const s = document.createElement('div');
+    s.className = 'wa-day';
+    s.textContent = dayLabel(m.created_at);
+    body.appendChild(s);
+    lastDay = day;
+  }
+  const wrap = document.createElement('div');
+  wrap.innerHTML = makeMsgHtml(m);
+  body.appendChild(wrap.firstElementChild);
+}
+
+function addBubble(m) {
+  if (!chat || seen.has(m.id)) return;
+  seen.add(m.id);
+  msgCache.set(m.id, m);
+  $('waBody').querySelector('.wa-empty')?.remove();
+  appendMsg(m);
+  scrollBottom();
+}
+
+function scrollBottom() { const b = $('waBody'); b.scrollTop = b.scrollHeight; }
+
+function snippet(m) {
+  if (m.audio_path) return '🎤 Message vocal';
+  if (m.image_path) return '📷 Photo';
+  return m.content || '';
+}
+
+function tickSvg(m) {
+  const double = m.read_at || m.delivered_at;
+  const path = double ? 'M1 5.5 L4.5 9 L11 2 M5.5 5.5 L9 9 L15.5 2' : 'M1 5.5 L4.5 9 L11 2';
+  return `<svg width="${double ? 17 : 13}" height="11" viewBox="0 0 ${double ? 17 : 13} 11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${path}"/></svg>`;
+}
+
+function makeMsgHtml(m) {
+  const mine = m.sender_id === me.id;
+  let inner = '';
+  if (m.reply_to) {
+    const r = msgCache.get(m.reply_to);
+    inner += `<div class="quote">${esc(r ? snippet(r) : 'Message')}</div>`;
+  }
+  if (m.image_path) inner += `<img class="img" src="${mediaUrl(m.image_path)}" alt="Photo" onclick="openPhoto(this.src)">`;
+  if (m.audio_path) inner += `<div class="vn" data-src="${mediaUrl(m.audio_path)}"><button class="vn-play" type="button" aria-label="Écouter">▶</button><div class="vn-bar"><div class="vn-fill"></div></div><span class="vn-time">0:00</span></div>`;
+  if (!m.audio_path && !m.image_path) inner += `<div class="txt">${esc(m.content)}</div>`;
+  const tick = mine ? `<span class="tick ${m.read_at ? 'read' : ''}" data-id="${m.id}">${tickSvg(m)}</span>` : '';
+  return `<div class="msg ${mine ? 'me' : 'them'}" data-msg="${m.id}"><div class="bub">${inner}<div class="meta">${timeOf(m.created_at)}${tick}</div></div></div>`;
+}
+
+function updateTick(m) {
+  document.querySelectorAll(`.tick[data-id="${m.id}"]`).forEach(el => {
+    el.innerHTML = tickSvg(m);
+    el.classList.toggle('read', !!m.read_at);
+  });
+}
+
+function removeMsgEl(id) { document.querySelectorAll(`[data-msg="${id}"]`).forEach(el => el.remove()); }
+
+/* Envoi */
+function toggleSendMic() {
+  const has = $('waInput').value.trim().length > 0;
+  $('sendBtn').style.display = has ? 'flex' : 'none';
+  $('micBtn').style.display = has ? 'none' : 'flex';
+}
+$('waInput').addEventListener('input', () => {
+  toggleSendMic();
+  if (!chat) return;
+  if (Date.now() - (trackPresence.last || 0) > 2500) { trackPresence.last = Date.now(); trackPresence(chat.partnerId); }
+  clearTimeout(trackPresence.t);
+  trackPresence.t = setTimeout(() => trackPresence(null), 3000);
+});
+
+function setReply(m) {
+  replyTo = m;
+  $('replyTxt').textContent = snippet(m);
+  $('replyBar').style.display = 'flex';
+  $('waInput').focus();
+}
+function cancelReply() { replyTo = null; $('replyBar').style.display = 'none'; }
+
+$('waForm').onsubmit = async e => {
+  e.preventDefault();
+  if (!chat || !me) return;
+  const content = $('waInput').value.trim();
+  if (!content) return;
+  $('waInput').value = '';
+  toggleSendMic();
+  const reply = replyTo?.id || null;
+  cancelReply();
+  const { data, error } = await sb.from('messages')
+    .insert({ listing_id: chat.listingId, sender_id: me.id, receiver_id: chat.partnerId, content, expires_at: expiresAt(), reply_to: reply })
+    .select().single();
+  if (error) { toast('Message non envoyé : ' + error.message); $('waInput').value = content; toggleSendMic(); return; }
+  addBubble(data);
+};
+
+$('attachBtn').onclick = () => $('photoFile').click();
+$('photoFile').onchange = async () => {
+  const f = $('photoFile').files[0];
+  $('photoFile').value = '';
+  if (!f || !chat) return;
+  if (!f.type.startsWith('image/')) { toast('Choisissez une image.'); return; }
+  if (f.size > 8 * 1024 * 1024) { toast('Photo trop lourde (8 Mo maximum).'); return; }
+  toast('Envoi de la photo…');
+  const path = `${me.id}/chat/${Date.now()}-${safeName(f.name)}`;
+  const { error: upErr } = await sb.storage.from(BUCKET).upload(path, f, { contentType: f.type, upsert: false });
+  if (upErr) { toast('Envoi impossible : ' + upErr.message); return; }
+  const reply = replyTo?.id || null;
+  cancelReply();
+  const { data, error } = await sb.from('messages')
+    .insert({ listing_id: chat.listingId, sender_id: me.id, receiver_id: chat.partnerId, content: '📷 Photo', image_path: path, expires_at: expiresAt(), reply_to: reply })
+    .select().single();
+  if (error) { toast('Message non envoyé.'); return; }
+  addBubble(data);
+};
+
+/* Messages vocaux */
+let rec = null, recChunks = [], recStream = null, recTimer = null;
+let starting = false, releasedEarly = false, holdStart = 0, startX = 0, startY = 0, recCancel = false, recLocked = false, recTick = null;
+const recBar = document.createElement('div');
+recBar.id = 'recBar';
+recBar.innerHTML = '<span><span class="rb-dot"></span><span id="rbTime">0:00</span></span><span class="rb-hint" id="rbHint">◀ Glisser pour annuler</span><button id="rbCancel" type="button" aria-label="Annuler">🗑</button>';
+document.body.appendChild(recBar);
+$('rbCancel').addEventListener('click', () => { if (rec && rec.state === 'recording') { recCancel = true; rec.stop(); } });
+function showRecBar() {
+  const t0 = Date.now();
+  recBar.style.display = 'flex';
+  $('rbHint').textContent = recLocked ? '' : '◀ Glisser pour annuler';
+  clearInterval(recTick);
+  recTick = setInterval(() => {
+    const sec = Math.floor((Date.now() - t0) / 1000);
+    $('rbTime').textContent = Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
+  }, 250);
+}
+function hideRecBar() { recBar.style.display = 'none'; clearInterval(recTick); recLocked = false; }
+async function startRec() {
+  if (!chat || !me) return;
+  if (!navigator.mediaDevices || !window.MediaRecorder) { toast("Votre navigateur ne permet pas l'enregistrement vocal."); return; }
+  try { recStream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
+  catch (err) { toast('Autorisez le micro dans les réglages de votre téléphone.'); return; }
+  const type = ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm'].find(t => MediaRecorder.isTypeSupported(t)) || '';
+  rec = new MediaRecorder(recStream, type ? { mimeType: type } : undefined);
+  recChunks = [];
+  rec.ondataavailable = e => { if (e.data && e.data.size) recChunks.push(e.data); };
+  rec.onstop = () => finishRecording(rec.mimeType || type || 'audio/webm');
+  rec.start();
+  if (releasedEarly) rec.stop();
+  $('micBtn').style.background = '#dc241f';
+  showRecBar();
+  recTimer = setTimeout(() => { if (rec && rec.state === 'recording') rec.stop(); }, 60000);
+};
+
+micBtn.addEventListener('contextmenu', e => e.preventDefault());
+micBtn.addEventListener('pointerdown', async e => {
+  e.preventDefault();
+  if (rec && recLocked) { recLocked = false; rec.stop(); return; }
+  if (rec || starting) return;
+  micBtn.setPointerCapture(e.pointerId);
+  starting = true; releasedEarly = false; recCancel = false; recLocked = false;
+  startX = e.clientX; startY = e.clientY; holdStart = Date.now();
+  await startRec();
+  starting = false;
+});
+micBtn.addEventListener('pointermove', e => {
+  if (!rec || rec.state !== 'recording') return;
+  if (startX - e.clientX > 90) { recCancel = true; rec.stop(); return; }
+  if (!recLocked && startY - e.clientY > 70) {
+    recLocked = true;
+    $('rbHint').textContent = '';
+    toast('Enregistrement verrouillé. Touchez le bouton pour envoyer.');
+  }
+});
+micBtn.addEventListener('pointerup', () => {
+  if (starting) {
+    if (Date.now() - holdStart < 800) recCancel = true;
+    releasedEarly = true;
+    return;
+  }
+  if (!rec || rec.state !== 'recording') return;
+  if (recLocked) return;
+  if (Date.now() - holdStart < 800) recCancel = true;
+  rec.stop();
+});
+
+async function finishRecording(type) {
+  clearTimeout(recTimer);
+  hideRecBar();
+  if (recCancel) {
+    if (recStream) recStream.getTracks().forEach(t => t.stop());
+    rec = null; recStream = null; recChunks = [];
+    micBtn.style.background = '';
+    toast('Enregistrement annulé.');
+    return;
+  }
+  if (recStream) recStream.getTracks().forEach(t => t.stop());
+  const blob = new Blob(recChunks, { type });
+  rec = null; recStream = null;
+  $('micBtn').style.background = '';
+  if (!blob.size || !chat || !me) return;
+  if (blob.size > 10 * 1024 * 1024) { toast('Message vocal trop long.'); return; }
+  const ext = type.includes('mp4') ? 'm4a' : 'webm';
+  const path = `${me.id}/voice/${Date.now()}.${ext}`;
+  toast('Envoi du message vocal…');
+  const { error: upErr } = await sb.storage.from(BUCKET).upload(path, blob, { contentType: type, upsert: false });
+  if (upErr) { toast('Envoi impossible : ' + upErr.message); return; }
+  const reply = replyTo?.id || null;
+  cancelReply();
+  const { data, error } = await sb.from('messages')
+    .insert({ listing_id: chat.listingId, sender_id: me.id, receiver_id: chat.partnerId, content: '🎤 Message vocal', audio_path: path, expires_at: expiresAt(), reply_to: reply })
+    .select().single();
+  if (error) { toast('Message non envoyé.'); return; }
+  addBubble(data);
+}
+
+/* Coches de lecture */
+async function markDeliveredAll() {
+  if (!me) return;
+  const { data } = await sb.from('messages').select('id').eq('receiver_id', me.id).is('delivered_at', null).limit(500);
+  if (data && data.length) await markDelivered(data.map(m => m.id));
+}
+function openPhoto(src) {
+  let v = $('photoViewer');
+  if (!v) {
+    v = document.createElement('div');
+    v.id = 'photoViewer';
+    v.innerHTML = '<div class="pv-top"><button class="pv-close" type="button" aria-label="Fermer">✕</button><div><button class="pv-share" type="button">Partager</button><button class="pv-save" type="button">Enregistrer</button></div></div><img class="pv-img" alt="Photo">';
+    document.body.appendChild(v);
+    v.querySelector('.pv-close').onclick = () => { v.style.display = 'none'; };
+  }
+  v.querySelector('.pv-img').src = src;
+  v.querySelector('.pv-save').onclick = () => savePhoto(src);
+  v.querySelector('.pv-share').onclick = () => sharePhoto(src);
+  v.style.display = 'flex';
+}
+async function savePhoto(src) {
+  try {
+    const blob = await (await fetch(src)).blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'photo-maison-facile.jpg';
+    document.body.appendChild(a); a.click(); a.remove();
+    toast('Photo enregistrée.');
+  } catch (e) { window.open(src, '_blank'); }
+}
+async function sharePhoto(src) {
+  try {
+    const blob = await (await fetch(src)).blob();
+    const file = new File([blob], 'photo.jpg', { type: blob.type || 'image/jpeg' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) await navigator.share({ files: [file] });
+    else toast('Partage non disponible sur cet appareil.');
+  } catch (e) { /* partage annulé */ }
+}
+
+async function markDelivered(ids) {
+  if (!ids.length) return;
+  await sb.from('messages').update({ delivered_at: new Date().toISOString() }).in('id', ids).is('delivered_at', null);
+}
+async function markRead(listingId, partnerId) {
+  const now = new Date().toISOString();
+  await sb.from('messages').update({ read_at: now, delivered_at: now })
+    .eq('listing_id', listingId).eq('receiver_id', me.id).eq('sender_id', partnerId).is('read_at', null);
+}
+
+/* Messages éphémères */
+function expiresAt() { return ephemeralHours ? new Date(Date.now() + ephemeralHours * 3600e3).toISOString() : null; }
+async function loadEphemeral(listingId, partnerId) {
+  const [a, b] = [me.id, partnerId].sort();
+  const { data } = await sb.from('chat_settings').select('ephemeral_hours')
+    .eq('listing_id', listingId).eq('user_a', a).eq('user_b', b).maybeSingle();
+  ephemeralHours = data?.ephemeral_hours || 0;
+}
+async function setEphemeral(hours) {
+  const [a, b] = [me.id, chat.partnerId].sort();
+  const { error } = await sb.from('chat_settings').upsert({ listing_id: chat.listingId, user_a: a, user_b: b, ephemeral_hours: hours });
+  if (error) { toast('Réglage non enregistré : ' + error.message); return; }
+  ephemeralHours = hours;
+  toast(hours ? 'Messages éphémères activés.' : 'Messages éphémères désactivés.');
+}
+
+/* Blocage */
+async function loadBlock(partnerId) {
+  const { data } = await sb.from('blocks').select('blocked').eq('blocker', me.id).eq('blocked', partnerId).maybeSingle();
+  blockedNow = !!data;
+}
+async function toggleBlock() {
+  if (!chat || !me) return;
+  if (blockedNow) {
+    await sb.from('blocks').delete().eq('blocker', me.id).eq('blocked', chat.partnerId);
+    blockedNow = false;
+    toast('Personne débloquée.');
+  } else {
+    if (!confirm('Bloquer cette personne ? Elle ne pourra plus vous écrire.')) return;
+    const { error } = await sb.from('blocks').insert({ blocker: me.id, blocked: chat.partnerId });
+    if (error) { toast('Blocage impossible : ' + error.message); return; }
+    blockedNow = true;
+    toast('Personne bloquée.');
+  }
+  $('waInput').disabled = blockedNow;
+  $('waInput').placeholder = blockedNow ? 'Personne bloquée' : 'Message';
+}
+
+/* Suppression de messages */
+function openSheet(items) {
+  $('sheetList')._items = items;
+  $('sheetList').innerHTML = items.map((it, i) => `<button class="${it.danger ? 'danger' : ''}" data-i="${i}">${esc(it.label)}</button>`).join('')
+    + '<button class="cancel" data-i="-1">Annuler</button>';
+  showM('sheetModal');
+}
+$('sheetList').onclick = e => {
+  const b = e.target.closest('button');
+  if (!b || b.dataset.i === '-1') { hideM('sheetModal'); return; }
+  const it = $('sheetList')._items[+b.dataset.i];
+  hideM('sheetModal');
+  it?.action();
+};
+
+function openMsgSheet(m) {
+  const items = [{ label: 'Répondre', action: () => setReply(m) }, { label: 'Sélectionner', action: () => startSelect(m) }];
+  if (m.image_path) items.push({ label: 'Enregistrer la photo', action: () => savePhoto(mediaUrl(m.image_path)) });
+  if (!m.audio_path && !m.image_path) items.push({ label: 'Copier', action: () => navigator.clipboard?.writeText(m.content).then(() => toast('Copié.')) });
+  items.push({ label: 'Supprimer pour moi', danger: true, action: () => deleteForMe(m) });
+  if (m.sender_id === me.id) items.push({ label: 'Supprimer pour tout le monde', danger: true, action: () => deleteForAll(m) });
+  openSheet(items);
+}
+async function deleteForMe(m) {
+  const { error } = await sb.rpc('delete_for_me', { msg_id: m.id });
+  if (error) { toast('Suppression impossible : ' + error.message); return; }
+  removeMsgEl(m.id);
+}
+async function deleteForAll(m) {
+  const { error } = await sb.from('messages').delete().eq('id', m.id);
+  if (error) { toast('Suppression impossible : ' + error.message); return; }
+  removeMsgEl(m.id);
+}
+
+/* Sélection multiple de messages */
+let selMode = false;
+const selIds = new Set();
+const selBar = document.createElement('div');
+selBar.id = 'selBar';
+selBar.innerHTML = '<button type="button" id="selCancel">Annuler</button><span id="selCount">0 sélectionné</span><button type="button" id="selAll">Tout</button><button type="button" id="selDel" class="danger">Supprimer</button>';
+document.querySelector('.wa-foot').before(selBar);
+function updateSelCount() { $('selCount').textContent = selIds.size + (selIds.size > 1 ? ' sélectionnés' : ' sélectionné'); }
+function toggleSel(id) {
+  const row = document.querySelector(`.msg[data-msg="${id}"]`);
+  if (selIds.has(id)) { selIds.delete(id); row?.classList.remove('sel'); }
+  else { selIds.add(id); row?.classList.add('sel'); }
+  updateSelCount();
+}
+function startSelect(m) {
+  selMode = true; selIds.clear();
+  document.querySelectorAll('.msg.sel').forEach(r => r.classList.remove('sel'));
+  $('waBody').style.paddingBottom = '12px';
+  document.querySelector('.wa-foot').style.display = 'none';
+  selBar.classList.add('open');
+  toggleSel(m.id);
+}
+function endSelect() {
+  selMode = false; selIds.clear();
+  document.querySelectorAll('.msg.sel').forEach(r => r.classList.remove('sel'));
+  document.querySelector('.wa-foot').style.display = '';
+  selBar.classList.remove('open');
+  updateSelCount();
+}
+$('selCancel').onclick = endSelect;
+$('selAll').onclick = () => {
+  document.querySelectorAll('#waBody .msg').forEach(r => { if (!selIds.has(r.dataset.msg)) toggleSel(r.dataset.msg); });
+};
+$('selDel').onclick = () => {
+  if (!selIds.size) { toast('Sélectionnez au moins un message.'); return; }
+  const msgs = [...selIds].map(id => msgCache.get(id)).filter(Boolean);
+  const allMine = msgs.length && msgs.every(m => m.sender_id === me.id);
+  const items = [{ label: 'Supprimer pour moi', danger: true, action: () => bulkDelete(msgs, false) }];
+  if (allMine) items.push({ label: 'Supprimer pour tout le monde', danger: true, action: () => bulkDelete(msgs, true) });
+  openSheet(items);
+};
+async function bulkDelete(msgs, forAll) {
+  for (const m of msgs) {
+    if (forAll) { if (m.sender_id === me.id) await deleteForAll(m); }
+    else await deleteForMe(m);
+  }
+  endSelect();
+  toast('Messages supprimés.');
+}
+$('waBody').addEventListener('click', e => {
+  if (!selMode) return;
+  const row = e.target.closest('.msg');
+  if (row) toggleSel(row.dataset.msg);
+});
+$('waBody').addEventListener('contextmenu', e => e.preventDefault());
+$('waBody').addEventListener('selectstart', e => e.preventDefault());
+
+/* Lecture des messages vocaux */
+const fmtTime = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+function vnAudio(vn) {
+  if (vn._a) return vn._a;
+  const a = new Audio(vn.dataset.src);
+  a.preload = 'metadata';
+  const btn = vn.querySelector('.vn-play'), fill = vn.querySelector('.vn-fill'), time = vn.querySelector('.vn-time');
+  a.onloadedmetadata = () => { if (isFinite(a.duration)) time.textContent = fmtTime(a.duration); };
+  a.ontimeupdate = () => {
+    if (a.duration) fill.style.width = (a.currentTime / a.duration * 100) + '%';
+    time.textContent = fmtTime(a.currentTime);
+  };
+  a.onended = () => { btn.textContent = '▶'; fill.style.width = '0%'; time.textContent = isFinite(a.duration) ? fmtTime(a.duration) : '0:00'; };
+  a.onerror = () => toast('Vocal non lisible sur cet appareil.');
+  vn._a = a;
+  return a;
+}
+$('waBody').addEventListener('click', e => {
+  const vn = e.target.closest('.vn');
+  if (!vn) return;
+  const a = vnAudio(vn);
+  const btn = vn.querySelector('.vn-play');
+  if (e.target.closest('.vn-bar')) {
+    if (a.duration) a.currentTime = ((e.offsetX) / e.target.closest('.vn-bar').clientWidth) * a.duration;
+    return;
+  }
+  if (!e.target.closest('.vn-play')) return;
+  if (a.paused) {
+    document.querySelectorAll('.vn').forEach(o => { if (o !== vn && o._a && !o._a.paused) { o._a.pause(); o.querySelector('.vn-play').textContent = '▶'; } });
+    a.play().catch(() => toast('Lecture impossible sur cet appareil.'));
+    btn.textContent = '❚❚';
+  } else {
+    a.pause();
+    btn.textContent = '▶';
+  }
+});
+
+/* Glisser un message vers la droite pour y répondre */
+let swipe = null;
+function resetSwipe() {
+  document.querySelectorAll('.bub').forEach(b => { b.style.transform = ''; });
+  swipe = null;
+}
+$('waBody').addEventListener('pointerdown', e => {
+  if (selMode) return;
+  const row = e.target.closest('.msg');
+  swipe = row ? { x: e.clientX, y: e.clientY, row, id: row.dataset.msg, fired: false } : null;
+});
+$('waBody').addEventListener('pointermove', e => {
+  if (!swipe) return;
+  const dx = e.clientX - swipe.x, dy = e.clientY - swipe.y;
+  if (Math.abs(dy) > 25) { resetSwipe(); return; }
+  if (dx > 0) {
+    swipe.row.querySelector('.bub').style.transform = `translateX(${Math.min(dx, 90)}px)`;
+    if (dx > 70 && !swipe.fired) {
+      swipe.fired = true;
+      const m = msgCache.get(swipe.id);
+      if (m) { setReply(m); if (navigator.vibrate) navigator.vibrate(15); }
+    }
+  }
+});
+['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => $('waBody').addEventListener(ev, resetSwipe));
+
+/* Appui long sur une bulle */
+let pressTimer = null;
+$('waBody').addEventListener('pointerdown', e => {
+  if (selMode || e.target.closest('.vn,a,img')) return;
+  const row = e.target.closest('.msg');
+  if (!row) return;
+  pressTimer = setTimeout(() => {
+    pressTimer = null;
+    const m = msgCache.get(row.dataset.msg);
+    if (m) openMsgSheet(m);
+  }, 450);
+});
+['pointerup', 'pointerleave', 'pointercancel', 'pointermove'].forEach(ev =>
+  $('waBody').addEventListener(ev, () => { clearTimeout(pressTimer); pressTimer = null; }));
+$('waBody').addEventListener('dblclick', e => {
+  if (selMode) return;
+  if (selMode || e.target.closest('.vn,a,img')) return;
+  const row = e.target.closest('.msg');
+  const m = row && msgCache.get(row.dataset.msg);
+  if (m) openMsgSheet(m);
+});
+
+/* Menu de la conversation */
+$('waMenu').onclick = () => {
+  if (!chat) return;
+  openSheet([
+    { label: (ephemeralHours === 0 ? '✓ ' : '') + 'Messages éphémères : désactivés', action: () => setEphemeral(0) },
+    { label: (ephemeralHours === 24 ? '✓ ' : '') + 'Messages éphémères : 24 heures', action: () => setEphemeral(24) },
+    { label: (ephemeralHours === 168 ? '✓ ' : '') + 'Messages éphémères : 7 jours', action: () => setEphemeral(168) },
+    { label: blockedNow ? 'Débloquer cette personne' : 'Bloquer cette personne', danger: !blockedNow, action: toggleBlock },
+    { label: "Signaler l'annonce", danger: true, action: () => reportListing(chat.listingId) }
+  ]);
+};
+function openChatInfo() { if (chat) { const n = partnerNames[chat.partnerId]; toast(n ? 'Contact : ' + n : chat.title); } }
+
+/* Présence et écriture en cours */
+function startPresence() {
+  if (presenceCh) return;
+  presenceCh = sb.channel('online', { config: { presence: { key: me.id } } });
+  presenceCh.on('presence', { event: 'sync' }, () => {
+    const st = presenceCh.presenceState();
+    onlineIds = new Set(Object.keys(st));
+    typingFromPartner = !!chat && (st[chat.partnerId] || []).some(x => x.typingTo === me.id && Date.now() - x.at < 6000);
+    updatePresenceLabel();
+  }).subscribe(async status => {
+    if (status === 'SUBSCRIBED') await presenceCh.track({ at: Date.now(), typingTo: null });
+  });
+}
+function trackPresence(typingTo) {
+  if (presenceCh) presenceCh.track({ at: Date.now(), typingTo }).catch(() => {});
+}
+function updatePresenceLabel() {
+  const el = $('waSub');
+  if (!chat) { el.textContent = ''; return; }
+  if (typingFromPartner) { el.textContent = "en train d'écrire…"; el.style.color = '#00a884'; }
+  else if (onlineIds.has(chat.partnerId)) { el.textContent = 'en ligne'; el.style.color = '#00a884'; }
+  else { el.textContent = 'hors ligne'; el.style.color = '#8696a0'; }
+}
+
+/* Coches et messages en direct */
+function subscribe() {
+  if (channel) return;
+  channel = sb.channel('msgs-' + me.id)
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, p => {
+      const m = p.new;
+      if (m.receiver_id === me.id) markDelivered([m.id]);
+      const open = chat && $('chatModal').classList.contains('open') && m.listing_id === chat.listingId &&
+        [m.sender_id, m.receiver_id].includes(chat.partnerId);
+      if (open) {
+        addBubble(m);
+        if (m.receiver_id === me.id) markRead(chat.listingId, chat.partnerId);
+      } else if (m.receiver_id === me.id) {
+        toast('Nouveau message reçu.');
+        notifySound();
+      }
+    })
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'messages' }, p => updateTick(p.new))
+    .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'messages' }, p => removeMsgEl(p.old.id))
+    .subscribe();
+}
+
+function notifySound() {
+  try {
+    const c = new (window.AudioContext || window.webkitAudioContext)();
+    const o = c.createOscillator(), g = c.createGain();
+    o.connect(g); g.connect(c.destination);
+    o.frequency.value = 880; g.gain.value = 0.15;
+    o.start(); o.stop(c.currentTime + 0.2);
+  } catch (e) {}
+  document.title = '● Nouveau message — Maison Facile';
+  setTimeout(() => { document.title = 'Maison Facile — Location de logements au Congo'; }, 4000);
+}
+
+/* ---------- Boîte de messages ---------- */
+async function openInbox() {
+  if (!me) { openAuth(); return; }
+  const { data, error } = await sb.from('messages')
+    .select('id,listing_id,sender_id,receiver_id,content,audio_path,image_path,created_at,listings(title)')
+    .order('created_at', { ascending: false }).limit(300);
+  if (error) { toast('Messages indisponibles.'); return; }
+  const map = new Map();
+  for (const m of data) {
+    if ((m.hidden_for || []).includes(me.id)) continue;
+    const partner = m.sender_id === me.id ? m.receiver_id : m.sender_id;
+    const key = m.listing_id + '|' + partner;
+    if (!map.has(key)) map.set(key, { listingId: m.listing_id, partner, title: m.listings?.title || 'Annonce', last: m });
+  }
+  const threads = [...map.values()];
+  const missing = [...new Set(threads.map(t => t.partner))].filter(id => !partnerNames[id]);
+  if (missing.length) {
+    const { data: profs } = await sb.from('profiles').select('id,full_name').in('id', missing);
+    (profs || []).forEach(p => { partnerNames[p.id] = p.full_name; });
+  }
+  threadList = threads;
+  $('inboxBody').innerHTML = threads.length
+    ? threads.map((t, i) => `<div class="item" onclick="openThread(${i})">
+        <div style="min-width:0"><strong>${esc(partnerNames[t.partner] || 'Utilisateur')}</strong>
+          <div class="loc">${esc(t.title)}</div>
+          <div class="loc" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(snippet(t.last))}</div></div>
+        <span style="color:var(--muted)">›</span></div>`).join('')
+    : '<p class="hint">Aucune conversation pour le moment.</p>';
+  showM('inboxModal');
+}
+let threadList = [];
+function openThread(i) {
+  const t = threadList[i];
+  openChat(t.listingId, t.title, t.partner);
+}
+
+/* ---------- Mes annonces et compte ---------- */
+async function openMine() {
+  if (!me) { openAuth(); return; }
+  const { data, error } = await sb.from('listings').select('id,title,city,neighborhood,price').eq('owner_id', me.id).order('created_at', { ascending: false });
+  if (error) { toast('Annonces indisponibles.'); return; }
+  $('mineBody').innerHTML = data.length
+    ? data.map(l => `<div class="item" onclick="openDetail('${l.id}')">
+        <div><strong>${esc(l.title)}</strong><div class="loc">${esc(l.city)} · ${esc(l.neighborhood)} · ${money(l.price)}</div></div><span>›</span></div>`).join('')
+    : '<p class="hint">Vous n’avez encore publié aucune annonce.</p>';
+  showM('mineModal');
+}
+
+async function deleteAccount() {
+  if (!me) return;
+  if (!confirm('Supprimer définitivement votre compte, vos annonces et vos messages ?')) return;
+  if (!confirm('Dernière confirmation : cette action est irréversible.')) return;
+  const { data: mine } = await sb.from('listings').select('photos,videos').eq('owner_id', me.id);
+  const paths = (mine || []).flatMap(l => [...(l.photos || []), ...(l.videos || [])]);
+  const { data: voice } = await sb.storage.from(BUCKET).list(`${me.id}/voice`);
+  (voice || []).forEach(f => paths.push(`${me.id}/voice/${f.name}`));
+  const { data: photosChat } = await sb.storage.from(BUCKET).list(`${me.id}/chat`);
+  (photosChat || []).forEach(f => paths.push(`${me.id}/chat/${f.name}`));
+  if (paths.length) await sb.storage.from(BUCKET).remove(paths);
+  const { error } = await sb.rpc('delete_my_account');
+  if (error) { toast('Suppression impossible : ' + error.message); return; }
+  await sb.auth.signOut();
+  hideM('mineModal');
+  toast('Votre compte a été supprimé.');
+}
+
+/* ---------- Administration ---------- */
+async function openAdmin() {
+  if (!isAdmin()) { toast("Accès réservé à l'administrateur."); return; }
+  showM('adminModal');
+  $('adminBody').innerHTML = '<p class="hint">Chargement…</p>';
+  const [lst, prof, msgs, cnt] = await Promise.all([
+    sb.from('listings').select('id,title,city,neighborhood,price,owner_name,call_phone,created_at,photos,videos').order('created_at', { ascending: false }),
+    sb.from('profiles').select('id,full_name,phone,created_at').order('created_at', { ascending: false }),
+    sb.from('messages').select('id,content,created_at,listing_id').order('created_at', { ascending: false }).limit(100),
+    sb.from('messages').select('id', { count: 'exact', head: true })
+  ]);
+  const err = lst.error || prof.error || msgs.error || cnt.error;
+  if (err) { $('adminBody').innerHTML = `<p class="hint">Erreur : ${esc(err.message)}</p>`; return; }
+  adminData = { listings: lst.data || [], profiles: prof.data || [], messages: msgs.data || [], msgCount: cnt.count || 0, reports: null };
+  renderAdmin('stats');
+}
+
+function renderAdmin(tab) {
+  if (!adminData) return;
+  const ids = { stats: 'atStats', listings: 'atListings', users: 'atUsers', messages: 'atMsgs', reports: 'atReports' };
+  Object.keys(ids).forEach(t => $(ids[t]).classList.toggle('on', t === tab));
+  const d = adminData;
+  let html = '';
+  if (tab === 'stats') {
+    html = `<div class="grid2">
+      <div class="item"><div><div class="loc">Utilisateurs inscrits</div><strong style="font-size:22px">${d.profiles.length}</strong></div></div>
+      <div class="item"><div><div class="loc">Annonces publiées</div><strong style="font-size:22px">${d.listings.length}</strong></div></div>
+      <div class="item"><div><div class="loc">Messages envoyés</div><strong style="font-size:22px">${d.msgCount}</strong></div></div>
+      <div class="item"><div><div class="loc">Annonces avec vidéo</div><strong style="font-size:22px">${d.listings.filter(l => (l.videos || []).length).length}</strong></div></div>
+    </div>
+    <p class="hint">Pour bloquer définitivement un compte, utilisez Supabase : Authentication → Users → Ban user.</p>`;
+  } else if (tab === 'listings') {
+    html = d.listings.length ? d.listings.map(l => `<div class="item">
+      <div><strong>${esc(l.title)}</strong>
+        <div class="loc">${esc(l.city)} · ${esc(l.neighborhood)} · ${money(l.price)}</div>
+        <div class="loc">Par ${esc(l.owner_name)} · ${esc(l.call_phone)} · ${new Date(l.created_at).toLocaleDateString('fr-FR')}</div></div>
+      <button class="btn danger" onclick="adminDeleteListing('${l.id}')">Supprimer</button></div>`).join('') : '<p class="hint">Aucune annonce.</p>';
+  } else if (tab === 'users') {
+    html = d.profiles.length ? d.profiles.map(p => `<div class="item"><div>
+      <strong>${esc(p.full_name)}</strong>
+      <div class="loc">${esc(p.phone || 'Pas de numéro')} · inscrit le ${new Date(p.created_at).toLocaleDateString('fr-FR')}</div></div></div>`).join('') : '<p class="hint">Aucun utilisateur.</p>';
+    html += '<p class="hint">Les adresses e-mail et le blocage des comptes se gèrent dans Supabase : Authentication → Users.</p>';
+  } else if (tab === 'messages') {
+    const titles = new Map(d.listings.map(l => [l.id, l.title]));
+    html = d.messages.length ? d.messages.map(m => `<div class="item">
+      <div><div class="loc">${esc(titles.get(m.listing_id) || 'Annonce supprimée')} · ${new Date(m.created_at).toLocaleString('fr-FR')}</div>
+        <div>${esc(m.content)}</div></div>
+      <button class="btn danger" onclick="adminDeleteMessage('${m.id}')">Supprimer</button></div>`).join('') : '<p class="hint">Aucun message.</p>';
+  } else if (tab === 'reports') {
+    if (!d.reports) {
+      $('adminBody').innerHTML = '<p class="hint">Chargement…</p>';
+      sb.from('reports').select('id,reason,created_at,listing_id,listings(title)').order('created_at', { ascending: false })
+        .then(({ data, error }) => {
+          if (error) { $('adminBody').innerHTML = `<p class="hint">Erreur : ${esc(error.message)}</p>`; return; }
+          d.reports = data || [];
+          renderAdmin('reports');
+        });
+      return;
+    }
+    html = d.reports.length ? d.reports.map(r => `<div class="item">
+      <div><strong>${esc(r.listings?.title || 'Annonce supprimée')}</strong>
+        <div class="loc">${esc(r.reason)} · ${new Date(r.created_at).toLocaleDateString('fr-FR')}</div></div>
+      ${r.listing_id ? `<button class="btn danger" onclick="adminDeleteListing('${r.listing_id}')">Retirer l'annonce</button>` : ''}</div>`).join('') : '<p class="hint">Aucun signalement.</p>';
+  }
+  $('adminBody').innerHTML = html;
+}
+
+async function adminDeleteListing(id) {
+  if (!isAdmin() || !confirm('Supprimer cette annonce et ses photos et vidéos ?')) return;
+  const l = adminData.listings.find(x => x.id === id);
+  const paths = [...(l?.photos || []), ...(l?.videos || [])];
+  if (paths.length) await sb.storage.from(BUCKET).remove(paths);
+  const { error } = await sb.from('listings').delete().eq('id', id);
+  if (error) { toast('Suppression impossible : ' + error.message); return; }
+  adminData.listings = adminData.listings.filter(x => x.id !== id);
+  if (adminData.reports) adminData.reports = adminData.reports.filter(r => r.listing_id !== id);
+  toast('Annonce supprimée.');
+  loadListings();
+  renderAdmin('listings');
+}
+
+async function adminDeleteMessage(id) {
+  if (!isAdmin() || !confirm('Supprimer ce message ?')) return;
+  const { error } = await sb.from('messages').delete().eq('id', id);
+  if (error) { toast('Suppression impossible : ' + error.message); return; }
+  adminData.messages = adminData.messages.filter(m => m.id !== id);
+  adminData.msgCount = Math.max(0, adminData.msgCount - 1);
+  toast('Message supprimé.');
+  renderAdmin('messages');
+}
+
+/* ---------- Notifications sur le téléphone ---------- */
+const VAPID_PUBLIC = 'BN-e0oaEzrbbnEOH0XHXYyQTChrK6H0Hq3aCsyxQ-rKiwKd3YZG6AhsptUvRxG2S3_8LPrnpdTnk7usEI-KlnKU';
+function keyBytes(b64) {
+  const s = (b64 + '='.repeat((4 - b64.length % 4) % 4)).replace(/-/g, '+').replace(/_/g, '/');
+  return Uint8Array.from(atob(s), c => c.charCodeAt(0));
+}
+async function enableNotifications() {
+  if (!me) { openAuth(); return; }
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    toast("Sur iPhone : touchez Partager, puis « Sur l'écran d'accueil », et ouvrez l'application depuis l'icône.");
+    return;
+  }
+  try {
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') { toast('Notifications refusées. Autorisez-les dans les réglages.'); return; }
+    const reg = await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: keyBytes(VAPID_PUBLIC) });
+    const j = sub.toJSON();
+    const { error } = await sb.from('push_subscriptions').upsert(
+      { user_id: me.id, endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth },
+      { onConflict: 'endpoint' }
+    );
+    if (error) { toast('Activation impossible : ' + error.message); return; }
+    toast('Notifications activées sur ce téléphone.');
+  } catch (err) {
+    toast('Activation impossible : ' + (err.message || 'erreur'));
+  }
+}
+
+/* ---------- Démarrage ---------- */
+$('searchBtn').onclick = loadListings;
+$('city').addEventListener('keydown', e => { if (e.key === 'Enter') loadListings(); });
+renderNav();
+loadListings();
+toggleSendMic();
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+</script>
+</body>
+</html>
