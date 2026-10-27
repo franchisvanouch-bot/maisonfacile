@@ -137,6 +137,15 @@ h1,h2,h3,.brand{font-family:Georgia,'Times New Roman',serif}
 .btn{border-radius:6px}
 .btn.light{background:#fff;border:1px solid var(--line)}
 input,select,textarea{border-radius:6px}
+
+#guideOverlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;display:none;align-items:center;justify-content:center;padding:14px}
+.gd-box{background:#fff;border-radius:14px;max-width:560px;width:100%;max-height:88vh;display:flex;flex-direction:column;overflow:hidden}
+.gd-head{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line);font-size:17px}
+.gd-x{background:none;border:0;font-size:20px;cursor:pointer;color:var(--ink)}
+.gd-body{overflow:auto;padding:6px 16px 18px;font-size:15px;line-height:1.5;color:var(--ink)}
+.gd-body h3{margin:16px 0 6px;color:var(--green);font-size:16px}
+.gd-body ol,.gd-body ul{padding-left:20px}
+.gd-body .tip{background:var(--mint);padding:10px 12px;border-radius:8px;margin:10px 0}
 </style>
 </head>
 <body>
@@ -186,7 +195,7 @@ input,select,textarea{border-radius:6px}
   <div class="cards" id="cards"></div>
 </main>
 
-<footer class="footer">🇨🇬 Maison Facile · La location partout au Congo · Publication gratuite · <a href="#" onclick="showM('termsModal');return false" style="color:#dcefe5">Conditions et confidentialité</a></footer>
+<footer class="footer">🇨🇬 Maison Facile · La location partout au Congo · Publication gratuite · <a href="#" onclick="openGuide();return false" style="color:#dcefe5;font-weight:700">📖 Guide</a> · <a href="#" onclick="showM('termsModal');return false" style="color:#dcefe5">Conditions et confidentialité</a></footer>
 
 <!-- Connexion / inscription -->
 <div class="modal-back" id="authModal"><div class="modal">
@@ -462,6 +471,98 @@ async function shareApp() {
     await navigator.clipboard.writeText(url);
     toast('Lien copié : ' + url);
   } catch (e) { /* partage annulé */ }
+}
+
+const GUIDE_HTML = `
+<h3>1. Créer un compte</h3>
+<ol>
+<li>Touchez <b>Se connecter</b>, puis le lien pour créer un compte.</li>
+<li>Entrez votre nom, votre e-mail, un mot de passe et votre numéro (facultatif).</li>
+<li>Cochez l'acceptation des conditions d'utilisation, puis validez.</li>
+</ol>
+<div class="tip">Mot de passe oublié ? Touchez <b>Mot de passe oublié</b> sur l'écran de connexion. Un lien est envoyé à votre e-mail.</div>
+
+<h3>2. Publier une annonce</h3>
+<ol>
+<li>Connectez-vous, puis touchez <b>+ Publier</b>.</li>
+<li>Remplissez le titre, le type (maison, appartement, studio, chambre) et choisissez <b>Location</b> ou <b>Vente</b>.</li>
+<li>Indiquez la ville, le quartier, le prix, le nombre de chambres et une description.</li>
+<li>Ajoutez de 1 à 6 photos et jusqu'à 2 vidéos (40 Mo maximum chacune).</li>
+<li>Indiquez votre numéro d'appel et, si vous voulez, votre numéro WhatsApp.</li>
+<li>Touchez <b>Publier l'annonce</b>. La publication est gratuite.</li>
+</ol>
+<div class="tip">Pour modifier ou supprimer une annonce, allez dans <b>Mes annonces</b>.</div>
+
+<h3>3. Trouver une maison</h3>
+<ol>
+<li>Dans la recherche, écrivez une ville ou un quartier (exemple : Brazzaville, Talangaï).</li>
+<li>Choisissez le prix maximum, le type, et <b>Location</b> ou <b>Vente</b>.</li>
+<li>Touchez <b>Rechercher</b>. Les annonces apparaissent en dessous.</li>
+<li>Touchez une annonce pour voir toutes les photos, les vidéos et le prix.</li>
+</ol>
+
+<h3>4. Contacter le propriétaire</h3>
+<p>Dans la fiche d'une annonce, vous pouvez :</p>
+<ul>
+<li><b>Appeler</b> directement le propriétaire ;</li>
+<li>écrire sur <b>WhatsApp</b> ;</li>
+<li>écrire dans la <b>messagerie</b> de l'application (menu <b>Messages</b>).</li>
+</ul>
+
+<h3>5. Partager l'application</h3>
+<p>Touchez <b>🔗 Partager</b> en haut de la page. Vous pouvez envoyer le lien par WhatsApp, SMS ou e-mail.</p>
+
+<h3>6. Taper l'adresse du site</h3>
+<p>Dans la barre d'adresse de votre navigateur (Safari ou Chrome), tapez exactement :</p>
+<div class="tip"><b>maisonfacile-git.franchisvanouch.workers.dev</b></div>
+<p>Pas besoin d'espace. Si le site ne s'ouvre pas, vérifiez l'orthographe, ou ouvrez le lien que l'on vous a envoyé.</p>
+
+<h3>7. Installer sur iPhone</h3>
+<ol>
+<li>Ouvrez <b>Safari</b> (l'installation ne marche pas avec Chrome sur iPhone).</li>
+<li>Allez sur l'adresse du site.</li>
+<li>Touchez le bouton <b>Partager</b> (carré avec une flèche vers le haut).</li>
+<li>Descendez et touchez <b>Sur l'écran d'accueil</b>, puis <b>Ajouter</b>.</li>
+<li>Ouvrez <b>Maison Facile</b> depuis la nouvelle icône.</li>
+</ol>
+
+<h3>8. Installer sur Android</h3>
+<ol>
+<li>Ouvrez <b>Chrome</b>.</li>
+<li>Allez sur l'adresse du site.</li>
+<li>Touchez les <b>trois points</b> en haut à droite.</li>
+<li>Touchez <b>Installer l'application</b> ou <b>Ajouter à l'écran d'accueil</b>, puis confirmez.</li>
+<li>Ouvrez <b>Maison Facile</b> depuis l'icône de l'écran d'accueil.</li>
+</ol>
+
+<h3>9. Activer les notifications</h3>
+<ol>
+<li>Ouvrez l'application depuis l'icône de l'écran d'accueil.</li>
+<li>Connectez-vous, puis touchez <b>🔔 Notifications</b>.</li>
+<li>Acceptez quand le téléphone le demande.</li>
+</ol>
+<div class="tip">Sur iPhone, les notifications ne fonctionnent que depuis l'icône de l'écran d'accueil, pas depuis Safari.</div>
+`;
+// Lien de la vidéo guide : collez ici un lien YouTube (non listé) ou un lien direct .mp4
+const GUIDE_VIDEO_URL = './guide-chrome-iphone.mp4';
+function guideVideoHtml() {
+  const u = GUIDE_VIDEO_URL.trim();
+  if (!u) return '<h3>Vidéo guide</h3><div class="tip">La vidéo arrive bientôt. En attendant, suivez le guide écrit ci-dessous.</div>';
+  const yt = u.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]{6,})/);
+  if (yt) return '<h3>Vidéo guide</h3><div style="position:relative;padding-top:56.25%;margin:8px 0"><iframe src="https://www.youtube.com/embed/' + yt[1] + '" style="position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:10px" allow="accelerometer;autoplay;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe></div>';
+  return '<h3>Vidéo guide</h3><video controls playsinline src="' + u + '" style="width:100%;border-radius:10px;margin:8px 0"></video>';
+}
+function openGuide() {
+  let g = $('guideOverlay');
+  if (!g) {
+    g = document.createElement('div');
+    g.id = 'guideOverlay';
+    g.innerHTML = '<div class="gd-box"><div class="gd-head"><strong>Guide Maison Facile</strong><button class="gd-x" type="button" aria-label="Fermer">✕</button></div><div class="gd-body">' + guideVideoHtml() + GUIDE_HTML + '</div></div>';
+    document.body.appendChild(g);
+    g.querySelector('.gd-x').onclick = () => { g.style.display = 'none'; };
+    g.addEventListener('click', e => { if (e.target === g) g.style.display = 'none'; });
+  }
+  g.style.display = 'flex';
 }
 function renderNav() {
   const b = [];
