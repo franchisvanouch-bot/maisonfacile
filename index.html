@@ -638,7 +638,7 @@ async function openDetail(id) {
   if (error || !l) { toast('Annonce introuvable.'); return; }
   current = l;
   const media = [
-    ...(l.photos || []).map(p => `<img src="${mediaUrl(p)}" alt="Photo du logement" loading="lazy" decoding="async">`),
+    ...(l.photos || []).map(p => `<img src="${mediaUrl(p)}" alt="Photo du logement" loading="lazy" decoding="async" style="cursor:zoom-in" onclick="openPhoto(this.src)">`),
     ...(l.videos || []).map(v => `<video src="${mediaUrl(v)}" controls playsinline preload="none"></video>`)
   ].join('');
   const isOwner = me && me.id === l.owner_id;
