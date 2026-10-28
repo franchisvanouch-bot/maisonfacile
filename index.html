@@ -621,7 +621,7 @@ function renderCards() {
     return;
   }
   $('cards').innerHTML = listings.map(l => {
-    const img = l.photos?.[0] ? `<img src="${mediaUrl(l.photos[0])}" alt="${esc(l.title)}" loading="lazy">` : '<div class="nop">⌂</div>';
+    const img = l.photos?.[0] ? `<img src="${mediaUrl(l.photos[0])}" alt="${esc(l.title)}" loading="lazy" decoding="async">` : '<div class="nop">⌂</div>';
     return `<article class="card" onclick="openDetail('${l.id}')">
       <div class="ph">${img}<span class="badge">${l.transaction === 'vente' ? 'Vente' : 'Location'} · ${esc(l.listing_type)}</span></div>
       <div class="cb">
@@ -638,8 +638,8 @@ async function openDetail(id) {
   if (error || !l) { toast('Annonce introuvable.'); return; }
   current = l;
   const media = [
-    ...(l.photos || []).map(p => `<img src="${mediaUrl(p)}" alt="Photo du logement">`),
-    ...(l.videos || []).map(v => `<video src="${mediaUrl(v)}" controls playsinline preload="metadata"></video>`)
+    ...(l.photos || []).map(p => `<img src="${mediaUrl(p)}" alt="Photo du logement" loading="lazy" decoding="async">`),
+    ...(l.videos || []).map(v => `<video src="${mediaUrl(v)}" controls playsinline preload="none"></video>`)
   ].join('');
   const isOwner = me && me.id === l.owner_id;
   const tel = digits(l.call_phone);
@@ -964,7 +964,7 @@ function makeMsgHtml(m) {
     const r = msgCache.get(m.reply_to);
     inner += `<div class="quote">${esc(r ? snippet(r) : 'Message')}</div>`;
   }
-  if (m.image_path) inner += `<img class="img" src="${mediaUrl(m.image_path)}" alt="Photo" onclick="openPhoto(this.src)">`;
+  if (m.image_path) inner += `<img class="img" src="${mediaUrl(m.image_path)}" alt="Photo" loading="lazy" decoding="async" onclick="openPhoto(this.src)">`;
   if (m.audio_path) inner += `<div class="vn" data-src="${mediaUrl(m.audio_path)}"><button class="vn-play" type="button" aria-label="Écouter">▶</button><div class="vn-bar"><div class="vn-fill"></div></div><span class="vn-time">0:00</span></div>`;
   if (!m.audio_path && !m.image_path) inner += `<div class="txt">${esc(m.content)}</div>`;
   const tick = mine ? `<span class="tick ${m.read_at ? 'read' : ''}" data-id="${m.id}">${tickSvg(m)}</span>` : '';
